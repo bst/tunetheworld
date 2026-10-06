@@ -497,6 +497,13 @@ Zusätzlich im `TunerScreen`:
 
 ### Phase 8: Test auf dem Gerät
 
+**Emulator-Lauf (ohne echtes Gerät)**, so wurde die App auf dem Emulator geprüft:
+
+1. Emulator mit sichtbarem Fenster und `-allow-host-audio` starten. Die Headless-Variante (`-no-window`) kann keinen Audio-Treiber öffnen und liefert nur Stille.
+2. Virtuelles Mikrofon per PipeWire: `pw-loopback` mit einer Senke `saxsink` und einer Quelle `saxmic`. Den Emulator mit `PULSE_SOURCE=saxmic` und `PULSE_SERVER=unix:/run/user/1000/pulse/native` starten, damit die Standard-Quelle des Rechners unberührt bleibt.
+3. `adb emu avd hostmicoff` und danach `hostmicon`, dann die Aufnahme per `pw-cat -p --target saxsink <datei>` abspielen. Die Host-Mikrofon-Brücke liefert nur etwa 4 bis 5 Sekunden Audio nach diesem Umschalten. Danach kommt Stille, auch bei weiterlaufender Wiedergabe. Deshalb vor jedem Ton umschalten und innerhalb von etwa 2 Sekunden den Bildschirm prüfen.
+4. Auf dem Emulator gilt `VOICE_RECOGNITION` als Audioquelle (kein `UNPROCESSED`), die Latenz sagt nichts über echte Geräte aus.
+
 Die Abnahme erfolgt mit den Kriterien im nächsten Abschnitt. Gemessene Rechenzeit pro `detect()`-Aufruf einmal per `System.nanoTime()` loggen und danach wieder entfernen.
 
 ## Tests und Abnahme

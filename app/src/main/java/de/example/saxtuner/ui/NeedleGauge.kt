@@ -100,16 +100,17 @@ fun NeedleGauge(percent: Float?, modifier: Modifier = Modifier) {
         }
 
         // Labels outside the arc
-        fun label(text: String, p: Int, dy: Float = 0f) {
+        fun label(text: String, p: Int, dy: Float = 0f, extra: Float = 0f) {
             val layout = measurer.measure(text, labelStyle)
-            val at = point(CENTER_ANGLE + p * DEGREES_PER_PERCENT, radius + 14.dp.toPx())
+            val at = point(CENTER_ANGLE + p * DEGREES_PER_PERCENT, radius + 14.dp.toPx() + extra)
             drawText(layout, topLeft = Offset(at.x - layout.size.width / 2f, at.y - layout.size.height / 2f + dy))
         }
-        label(minusFifty, -50)
+        // End labels sit further out so they do not touch the arc
+        label(minusFifty, -50, extra = 14.dp.toPx())
         label(zero, 0)
-        label(plusFifty, 50)
-        label(tooLow, -50, dy = 18.dp.toPx())
-        label(tooHigh, 50, dy = 18.dp.toPx())
+        label(plusFifty, 50, extra = 14.dp.toPx())
+        label(tooLow, -50, dy = 18.dp.toPx(), extra = 14.dp.toPx())
+        label(tooHigh, 50, dy = 18.dp.toPx(), extra = 14.dp.toPx())
 
         // Needle
         val tip = point(CENTER_ANGLE + animated * DEGREES_PER_PERCENT, radius - 4.dp.toPx())
