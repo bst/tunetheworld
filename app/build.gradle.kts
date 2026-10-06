@@ -29,6 +29,12 @@ android {
     buildFeatures {
         compose = true
     }
+    testOptions {
+        unitTests.all {
+            // Real recordings used by SampleValidationTest; not part of the app
+            it.systemProperty("samples.dir", rootProject.file("samples/alt saxophone").absolutePath)
+        }
+    }
 }
 
 dependencies {

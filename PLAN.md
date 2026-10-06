@@ -154,7 +154,7 @@ Die Sprache steht bewusst nicht in `TunerSettings`. Android speichert sie selbst
 | `HOP_SIZE` | 1024 | Neue Samples pro Analyse (ca. 23 ms) |
 | `MIN_FREQ_HZ` | 90 | Untere Suchgrenze |
 | `MAX_FREQ_HZ` | 1100 | Obere Suchgrenze |
-| `YIN_THRESHOLD` | 0.15 | Schwellwert für YIN |
+| `YIN_THRESHOLD` | 0.03 | Schwellwert für YIN (0.15 lieferte beim Alt-D3-Sample vier Blöcke eine Oktave zu hoch, siehe Phase 3b) |
 | `MIN_CONFIDENCE` | 0.80 | Ergebnisse darunter verwerfen |
 | `RMS_GATE` | 0.01 | Unter diesem Pegel keine Analyse (ca. −40 dBFS) |
 | `MEDIAN_SIZE` | 5 | Anzahl Werte für die Median-Glättung |
