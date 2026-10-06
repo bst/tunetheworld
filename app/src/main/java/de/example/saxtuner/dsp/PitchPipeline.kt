@@ -17,15 +17,26 @@ class PitchPipeline(
     private val window = FloatArray(TunerConfig.WINDOW_SIZE)
     private var filled = 0
 
+    /** Level gate in dBFS; may be changed from another thread while processing. */
+    @Volatile
+    var gateDb: Float = TunerConfig.DEFAULT_GATE_DB
+
+    /** RMS level of the most recent block in dBFS (floored at the meter floor). */
+    @Volatile
+    var levelDb: Float = TunerConfig.METER_FLOOR_DB
+        private set
+
     /** Feeds [length] new samples; returns the smoothed frequency, or null if there is no usable tone. */
     fun process(block: FloatArray, length: Int): Float? {
+        levelDb = amplitudeToDb(rms(block, 0, length), TunerConfig.METER_FLOOR_DB)
+
         // Shift window left by length samples and append the new block at the end
         System.arraycopy(window, length, window, 0, window.size - length)
         System.arraycopy(block, 0, window, window.size - length, length)
         filled = minOf(filled + length, window.size)
         if (filled < window.size) return null
 
-        if (rms(window, window.size - TunerConfig.HOP_SIZE, TunerConfig.HOP_SIZE) < TunerConfig.RMS_GATE) {
+        if (rms(window, window.size - TunerConfig.HOP_SIZE, TunerConfig.HOP_SIZE) < dbToAmplitude(gateDb)) {
             smoother.reset()
             return null
         }
@@ -37,5 +48,6 @@ class PitchPipeline(
     fun reset() {
         filled = 0
         smoother.reset()
+        levelDb = TunerConfig.METER_FLOOR_DB
     }
 }

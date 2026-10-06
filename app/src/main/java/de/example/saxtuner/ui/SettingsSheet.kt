@@ -25,6 +25,7 @@ import androidx.core.os.LocaleListCompat
 import de.example.saxtuner.R
 import de.example.saxtuner.data.SettingsRepository
 import de.example.saxtuner.data.TunerSettings
+import de.example.saxtuner.engine.TunerConfig
 import de.example.saxtuner.music.AppLanguage
 import de.example.saxtuner.music.NoteNames
 import de.example.saxtuner.music.Transposition
@@ -53,6 +54,7 @@ fun SettingsSheet(
     settings: TunerSettings,
     onReferenceChange: (Int) -> Unit,
     onTranspositionChange: (Transposition) -> Unit,
+    onGateChange: (Float) -> Unit,
     onDismiss: () -> Unit
 ) {
     ModalBottomSheet(onDismissRequest = onDismiss) {
@@ -93,6 +95,19 @@ fun SettingsSheet(
                     ) { Text(modeLabel(mode)) }
                 }
             }
+
+            Text(stringResource(R.string.sensitivity), style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.sensitivity_hint), style = MaterialTheme.typography.bodySmall)
+            Slider(
+                value = settings.gateDb,
+                onValueChange = { onGateChange(it.roundToInt().toFloat()) },
+                valueRange = TunerConfig.MIN_GATE_DB..TunerConfig.MAX_GATE_DB,
+                steps = (TunerConfig.MAX_GATE_DB - TunerConfig.MIN_GATE_DB).toInt() - 1
+            )
+            Text(
+                stringResource(R.string.gate_format, settings.gateDb.roundToInt()),
+                style = MaterialTheme.typography.bodyMedium
+            )
 
             Text(stringResource(R.string.language), style = MaterialTheme.typography.titleMedium)
             val languages = AppLanguage.entries

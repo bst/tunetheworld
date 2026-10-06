@@ -30,6 +30,7 @@ class TunerViewModel(application: Application) : AndroidViewModel(application) {
 
     private var job: Job? = null
     private var lastToneAt = 0L
+    private var engine: TunerEngine? = null
 
     /** Starts listening. The caller must have checked that RECORD_AUDIO is granted. */
     @SuppressLint("MissingPermission")
@@ -38,12 +39,12 @@ class TunerViewModel(application: Application) : AndroidViewModel(application) {
         if (job?.isActive == true) return
         job = viewModelScope.launch {
             try {
-                val engine = TunerEngine(AudioInput(getApplication()))
+                val engine = TunerEngine(AudioInput(getApplication())).also { this@TunerViewModel.engine = it }
                 combine(
-                    engine.frequencies().sample(TunerConfig.UI_INTERVAL_MS),
+                    engine.frames().sample(TunerConfig.UI_INTERVAL_MS),
                     repository.settings
-                ) { hz, settings -> hz to settings }
-                    .collect { (hz, settings) -> update(hz, settings) }
+                ) { frame, settings -> frame to settings }
+                    .collect { (frame, settings) -> update(frame, settings) }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -56,17 +57,23 @@ class TunerViewModel(application: Application) : AndroidViewModel(application) {
     fun stop() {
         job?.cancel()
         job = null
-        _uiState.value = _uiState.value.copy(isActive = false)
+        engine = null
+        _uiState.value = _uiState.value.copy(isActive = false, levelDb = TunerConfig.METER_FLOOR_DB)
     }
 
-    private fun update(hz: Float?, settings: TunerSettings) {
+    private fun update(frame: TunerEngine.Frame, settings: TunerSettings) {
+        val hz = frame.frequencyHz
+        engine?.gateDb = settings.gateDb
         val now = SystemClock.elapsedRealtime()
         val current = _uiState.value
+        // Instant attack, slow fall so the meter is readable
+        val levelDb = maxOf(frame.levelDb, current.levelDb - TunerConfig.METER_FALL_DB)
         _uiState.value = if (hz != null) {
             lastToneAt = now
             TunerUiState(
                 note = NoteMapper.map(hz, settings.referenceHz, settings.transposition),
                 isActive = true,
+                levelDb = levelDb,
                 settings = settings
             )
         } else {
@@ -75,6 +82,7 @@ class TunerViewModel(application: Application) : AndroidViewModel(application) {
             TunerUiState(
                 note = if (expired) null else current.note,
                 isActive = false,
+                levelDb = levelDb,
                 settings = settings
             )
         }
@@ -82,6 +90,10 @@ class TunerViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setReferenceHz(hz: Int) {
         viewModelScope.launch { repository.setReferenceHz(hz) }
+    }
+
+    fun setGateDb(db: Float) {
+        viewModelScope.launch { repository.setGateDb(db) }
     }
 
     fun setTransposition(t: Transposition) {

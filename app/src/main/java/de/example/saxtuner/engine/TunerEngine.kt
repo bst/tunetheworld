@@ -14,8 +14,16 @@ class TunerEngine(
     private val audioInput: AudioInput,
     private val pipeline: PitchPipeline = PitchPipeline()
 ) {
-    /** Emits the smoothed frequency per block, or null when there is no usable tone. */
-    fun frequencies(): Flow<Float?> = flow {
+    /** One analysis step: the smoothed frequency (null = no usable tone) and the block level in dBFS. */
+    data class Frame(val frequencyHz: Float?, val levelDb: Float)
+
+    /** Level gate in dBFS; takes effect on the next block. */
+    var gateDb: Float
+        get() = pipeline.gateDb
+        set(value) { pipeline.gateDb = value }
+
+    /** Emits one [Frame] per block. */
+    fun frames(): Flow<Frame> = flow {
         val hop = FloatArray(TunerConfig.HOP_SIZE)
         pipeline.reset()
         audioInput.start()
@@ -24,7 +32,8 @@ class TunerEngine(
                 val n = audioInput.read(hop)
                 if (n < 0) error("AudioRecord read failed: $n")
                 // Null while the window is still filling, on silence, or on low confidence
-                emit(pipeline.process(hop, n))
+                val hz = pipeline.process(hop, n)
+                emit(Frame(hz, pipeline.levelDb))
             }
         } finally {
             audioInput.stop()

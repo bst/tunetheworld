@@ -83,6 +83,12 @@ fun TunerScreen(viewModel: TunerViewModel = viewModel()) {
             style = MaterialTheme.typography.bodyMedium
         )
 
+        LevelMeter(
+            levelDb = state.levelDb,
+            gateDb = state.settings.gateDb,
+            modifier = Modifier.fillMaxWidth().padding(top = 12.dp)
+        )
+
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -131,6 +137,7 @@ fun TunerScreen(viewModel: TunerViewModel = viewModel()) {
             settings = state.settings,
             onReferenceChange = viewModel::setReferenceHz,
             onTranspositionChange = viewModel::setTransposition,
+            onGateChange = viewModel::setGateDb,
             onDismiss = { showSettings = false }
         )
     }

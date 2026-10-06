@@ -9,6 +9,12 @@
     <string name="mode_tenor">Tenor sax (B♭)</string>
     <string name="mode_alto">Alto sax (E♭)</string>
     <string name="mode_concert">Concert (C)</string>
+    <string name="sensitivity">Microphone sensitivity</string>
+    <string name="sensitivity_hint">Move left for quiet instruments. Move right if background noise confuses the tuner. The marker on the level bar shows this threshold.</string>
+    <string name="gate_format">Threshold: %1$d dB</string>
+    <string name="level_ok">Signal heard</string>
+    <string name="level_too_quiet">Too quiet</string>
+    <string name="a11y_level">Input level %1$d decibels, threshold %2$d decibels</string>
     <string name="language">Language</string>
     <!-- Language names always appear in their own language -->
     <string name="language_de" translatable="false">Deutsch</string>

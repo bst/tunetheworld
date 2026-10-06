@@ -40,6 +40,16 @@ class SettingsRepositoryTest {
     }
 
     @Test
+    fun persistsAndClampsGate() = runBlocking {
+        repo.setGateDb(-50f)
+        assertEquals(-50f, repo.settings.first().gateDb)
+        repo.setGateDb(-10f)
+        assertEquals(-30f, repo.settings.first().gateDb)
+        repo.setGateDb(-90f)
+        assertEquals(-60f, repo.settings.first().gateDb)
+    }
+
+    @Test
     fun clampsReference() = runBlocking {
         repo.setReferenceHz(500)
         assertEquals(480, repo.settings.first().referenceHz)

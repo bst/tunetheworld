@@ -9,6 +9,12 @@
     <string name="mode_tenor">Tenorsax (B)</string>
     <string name="mode_alto">Altsax (Es)</string>
     <string name="mode_concert">Klingend (C)</string>
+    <string name="sensitivity">Mikrofonempfindlichkeit</string>
+    <string name="sensitivity_hint">Nach links für leise Instrumente. Nach rechts, wenn Hintergrundgeräusche stören. Die Markierung im Pegelbalken zeigt diese Schwelle.</string>
+    <string name="gate_format">Schwelle: %1$d dB</string>
+    <string name="level_ok">Signal erkannt</string>
+    <string name="level_too_quiet">Zu leise</string>
+    <string name="a11y_level">Eingangspegel %1$d Dezibel, Schwelle %2$d Dezibel</string>
     <string name="language">Sprache</string>
     <string name="hint_play">Spiel einen Ton</string>
     <string name="too_low">zu tief</string>
