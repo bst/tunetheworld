@@ -10,6 +10,11 @@
     <string name="mode_alto">Alto sax (E♭)</string>
     <string name="mode_concert">Concert (C)</string>
     <string name="language">Language</string>
+    <!-- Language names always appear in their own language -->
+    <string name="language_de" translatable="false">Deutsch</string>
+    <string name="language_en" translatable="false">English</string>
+    <string name="no_note" translatable="false">–</string>
+    <string name="hertz_format">%1$s Hz</string>
     <string name="hint_play">Play a note</string>
     <string name="too_low">flat</string>
     <string name="too_high">sharp</string>
