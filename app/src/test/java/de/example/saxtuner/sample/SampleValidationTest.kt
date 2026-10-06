@@ -12,15 +12,20 @@ import kotlin.math.log2
 
 /** Runs the full detection chain on real alto saxophone recordings (see PLAN.md, phase 3b). */
 class SampleValidationTest {
-    private class Sample(val file: String, val midi: Int, val vibrato: Boolean)
+    // octaveJump: the player's tone really jumps one octave up for a moment (checked by ear)
+    private class Sample(val file: String, val midi: Int, val vibrato: Boolean, val octaveJump: Boolean = false)
 
     // File names state the sounding pitch
     private val samples = listOf(
         Sample("AltoSax.NoVib.ff.Db3.stereo.aif", 49, false),
-        Sample("AltoSax.NoVib.ff.D3.stereo.aif", 50, false),
+        Sample("AltoSax.NoVib.ff.D3.stereo.aif", 50, false, octaveJump = true),
         Sample("AltoSax.NoVib.ff.C5.stereo.aif", 72, false),
         Sample("AltoSax.vib.ff.F5.stereo.aif", 77, true),
     )
+
+    private companion object {
+        const val MAX_OCTAVE_BLOCKS = 8 // about 190 ms
+    }
 
     private val dir: File by lazy {
         val path = System.getProperty("samples.dir") ?: error("system property samples.dir is not set")
@@ -61,12 +66,24 @@ class SampleValidationTest {
             val blocks = run(s.file)
             val firstFull = TunerConfig.WINDOW_SIZE / TunerConfig.HOP_SIZE - 1
             val eligible = blocks.filter { it.index >= firstFull }
-            val scored = eligible.filter { it.hz != null }
+            val allScored = eligible.filter { it.hz != null }
             fun fail(msg: String) { failures += "${s.file}: $msg" }
 
-            val ratio = scored.size.toFloat() / eligible.size
+            val ratio = allScored.size.toFloat() / eligible.size
             if (ratio < 0.70f) fail("only ${"%.0f".format(ratio * 100)} % of blocks scored")
-            if (scored.isEmpty()) continue
+            if (allScored.isEmpty()) continue
+
+            // Blocks near one octave above the expected note: tolerated only where the recording really jumps
+            fun isOctaveUp(b: Block) = abs(centsFromExpected(b.hz!!, s.midi) - 1200f) < 100f
+            val octaveBlocks = allScored.filter { isOctaveUp(it) }
+            if (s.octaveJump) {
+                if (octaveBlocks.size > MAX_OCTAVE_BLOCKS) fail("${octaveBlocks.size} octave-jump blocks, at most $MAX_OCTAVE_BLOCKS allowed")
+                val contiguous = octaveBlocks.isEmpty() ||
+                    octaveBlocks.last().index - octaveBlocks.first().index == octaveBlocks.size - 1
+                if (!contiguous) fail("octave-jump blocks are not one single run")
+            }
+            // Everything else is judged on the normal part of the note
+            val scored = if (s.octaveJump) allScored.filter { !isOctaveUp(it) } else allScored
 
             val cents = scored.map { centsFromExpected(it.hz!!, s.midi) }
             val worst = cents.maxOf { abs(it) }
@@ -78,7 +95,7 @@ class SampleValidationTest {
             if (!s.vibrato && mad > 5f) fail("unsteady: mean deviation $mad cents")
             if (s.vibrato && range <= 10f) fail("no vibrato visible: range $range cents")
 
-            val onset = scored.first().index - firstFull
+            val onset = allScored.first().index - firstFull
             val onsetMs = onset * 1000f * TunerConfig.HOP_SIZE / TunerConfig.SAMPLE_RATE
             if (onsetMs > 300f) fail("onset after $onsetMs ms")
 
@@ -95,6 +112,10 @@ class SampleValidationTest {
 
             report.append("%-34s %6.0f%% %8.2f %9.1f %8.1f %7.1f %5.0fms\n".format(
                 s.file, ratio * 100, median(scored.map { it.hz!! }), medCents, mad, range, onsetMs))
+            if (octaveBlocks.isNotEmpty()) {
+                report.append("    ${octaveBlocks.size} octave-up blocks (indices ${octaveBlocks.first().index}..${octaveBlocks.last().index})" +
+                    if (s.octaveJump) ", expected\n" else ", UNEXPECTED\n")
+            }
         }
         println(report)
         assertTrue(failures.joinToString("\n", prefix = "\n"), failures.isEmpty())

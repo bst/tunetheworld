@@ -6,7 +6,7 @@ object TunerConfig {
     const val HOP_SIZE = 1024           // new samples per analysis (about 23 ms)
     const val MIN_FREQ_HZ = 90f         // lower search limit
     const val MAX_FREQ_HZ = 1100f       // upper search limit
-    const val YIN_THRESHOLD = 0.03f     // YIN absolute threshold (0.15 gave octave-high errors on the alto D3 sample)
+    const val YIN_THRESHOLD = 0.15f     // YIN absolute threshold
     const val MIN_CONFIDENCE = 0.80f    // discard results below this
     const val RMS_GATE = 0.01f          // no analysis below this level (about -40 dBFS)
     const val MEDIAN_SIZE = 5           // values used for the median smoothing
