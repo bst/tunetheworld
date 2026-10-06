@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_title">Sax-Stimmgerät</string>
+    <string name="settings">Einstellungen</string>
+    <string name="info_line">A4 = %1$d Hz · %2$s</string>
+    <string name="reference_pitch">Kammerton</string>
+    <string name="reset_reference">Auf 440 Hz zurücksetzen</string>
+    <string name="display_mode">Anzeige</string>
+    <string name="mode_tenor">Tenorsax (B)</string>
+    <string name="mode_alto">Altsax (Es)</string>
+    <string name="mode_concert">Klingend (C)</string>
+    <string name="language">Sprache</string>
+    <string name="hint_play">Spiel einen Ton</string>
+    <string name="too_low">zu tief</string>
+    <string name="too_high">zu hoch</string>
+    <string name="a11y_reading">%1$s %2$d, %3$+d Prozent</string>
+    <string name="permission_title">Mikrofon benötigt</string>
+    <string name="permission_text">Das Stimmgerät hört dein Instrument über das Mikrofon. Es wird nichts gespeichert oder gesendet.</string>
+    <string name="permission_button">Mikrofon erlauben</string>
+    <string name="open_settings">Einstellungen öffnen</string>
+</resources>
