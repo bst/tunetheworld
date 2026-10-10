@@ -1,6 +1,8 @@
-# saxtuner
+# Tune the World
 
-An Android tuner for tenor and alto saxophone. It listens through the microphone, detects the pitch with a self-written YIN detector, and shows the note together with its deviation on a needle gauge. By default it shows the written (transposed) note for tenor sax, because saxophonists read and finger written pitch.
+A free tuner for Android. No ads, no tracking, no account. The app has no internet permission, so nothing you play ever leaves your phone.
+
+It listens through the microphone, detects the pitch with a self-written YIN detector, and shows the note together with its deviation on a needle gauge. It works with any instrument or voice in the range of about 90–1100 Hz. Concert (C) mode shows the sounding pitch. For saxophonists there are also tenor and alto modes, which show the written (transposed) note. Tenor mode is the default, because the app started out as a saxophone tuner.
 
 ## Features
 
@@ -34,10 +36,10 @@ Version 1 is feature-complete and has been checked on the emulator. The level me
 Known gaps:
 
 - The app has not been tested on real hardware. Latency, stability with a real saxophone and `UNPROCESSED` audio source behaviour are therefore unverified.
-- `applicationId` is still the placeholder `de.example.saxtuner`.
+- `applicationId` is `de.example.tunetheworld`, which still uses the placeholder `de.example` prefix.
 - Release builds are not minified and no signing config is set up.
 
-Out of scope for version 1: playing a reference tone, other instruments (soprano or baritone could be added as new `Transposition` values), strobe display, pitch history, and landscape layout.
+Out of scope for version 1: playing a reference tone, transposition modes for other instruments (soprano or baritone sax, trumpet, clarinet and others could be added as new `Transposition` values), strobe display, pitch history, and landscape layout.
 
 ## How it works
 
@@ -51,15 +53,15 @@ AudioRecord ──► TunerEngine ──► PitchPipeline ───────�
 ```
 
 - **Audio source:** `UNPROCESSED` if the device supports it, otherwise `VOICE_RECOGNITION`. It never uses `MIC`, because that often turns on noise suppression and automatic gain control.
-- **Pitch detection:** YIN in plain Kotlin with no Android dependencies ([YinPitchDetector.kt](app/src/main/java/de/example/saxtuner/dsp/YinPitchDetector.kt)). It finds the fundamental even when the second harmonic is louder, which is common in the saxophone's low register. `detect()` allocates nothing.
-- **Smoothing:** a median over 5 values. A jump of more than 0.8 semitones is ignored, unless three consecutive values agree on it, in which case it counts as a real note change ([PitchSmoother.kt](app/src/main/java/de/example/saxtuner/dsp/PitchSmoother.kt)).
-- **Note math:** `m = 69 + 12·log2(f / ref)`. The nearest sounding note is `n = round(m)` and the deviation is `(m − n) · 100` %. The transposition is added after rounding, and the reference pitch always means concert A4 ([NoteMapper.kt](app/src/main/java/de/example/saxtuner/music/NoteMapper.kt)). All calculation uses the pitch class index (0–11). The name comes from [NoteNames.kt](app/src/main/java/de/example/saxtuner/music/NoteNames.kt) only at display time, because "B" means different notes in German and English.
-- **Tuning constants** are all in [TunerConfig.kt](app/src/main/java/de/example/saxtuner/engine/TunerConfig.kt).
+- **Pitch detection:** YIN in plain Kotlin with no Android dependencies ([YinPitchDetector.kt](app/src/main/java/de/example/tunetheworld/dsp/YinPitchDetector.kt)). It finds the fundamental even when the second harmonic is louder, which is common in the saxophone's low register. `detect()` allocates nothing.
+- **Smoothing:** a median over 5 values. A jump of more than 0.8 semitones is ignored, unless three consecutive values agree on it, in which case it counts as a real note change ([PitchSmoother.kt](app/src/main/java/de/example/tunetheworld/dsp/PitchSmoother.kt)).
+- **Note math:** `m = 69 + 12·log2(f / ref)`. The nearest sounding note is `n = round(m)` and the deviation is `(m − n) · 100` %. The transposition is added after rounding, and the reference pitch always means concert A4 ([NoteMapper.kt](app/src/main/java/de/example/tunetheworld/music/NoteMapper.kt)). All calculation uses the pitch class index (0–11). The name comes from [NoteNames.kt](app/src/main/java/de/example/tunetheworld/music/NoteNames.kt) only at display time, because "B" means different notes in German and English.
+- **Tuning constants** are all in [TunerConfig.kt](app/src/main/java/de/example/tunetheworld/engine/TunerConfig.kt).
 
 ### Project layout
 
 ```
-app/src/main/java/de/example/saxtuner/
+app/src/main/java/de/example/tunetheworld/
   MainActivity.kt      AppCompatActivity, permission switch
   audio/               AudioInput (AudioRecord wrapper)
   engine/              TunerEngine, TunerConfig
@@ -109,7 +111,7 @@ The unit tests run on the JVM and need no device:
 - `SettingsRepositoryTest`: defaults, clamping, and fallback for unknown stored values.
 - `SampleValidationTest`: runs four alto saxophone recordings from the [University of Iowa Musical Instrument Samples](https://theremin.music.uiowa.edu/MIS-Pitches-2012/MISEbAltoSaxophone2012.html) through the full pipeline in concert and alto mode. It checks the share of detected blocks, correct note and octave, no octave errors, median deviation, stability, vibrato swing, and onset time. It prints a measurement table for each file. The D3 recording really does jump up an octave briefly (confirmed by ear), so the test allows that one short stretch.
 
-The recordings are not part of the repository. Before the tests run, the `downloadSamples` task in [app/build.gradle.kts](app/build.gradle.kts) downloads them, checks their SHA-256 hashes, and stores them in `~/.gradle/caches/saxtuner-samples/alto-saxophone/`. Once they are cached, no network access is needed. The directory is passed to the tests through the `samples.dir` system property. If the download fails, the build fails rather than skipping the test.
+The recordings are not part of the repository. Before the tests run, the `downloadSamples` task in [app/build.gradle.kts](app/build.gradle.kts) downloads them, checks their SHA-256 hashes, and stores them in `~/.gradle/caches/tunetheworld-samples/alto-saxophone/`. Once they are cached, no network access is needed. The directory is passed to the tests through the `samples.dir` system property. If the download fails, the build fails rather than skipping the test.
 
 ## Testing on the emulator
 

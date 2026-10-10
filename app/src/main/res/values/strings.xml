@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_title">Sax Tuner</string>
+    <!-- Brand name, the same in every language -->
+    <string name="app_title" translatable="false">Tune the World</string>
+    <!-- Shorter name under the launcher icon, where long labels get cut off -->
+    <string name="app_label" translatable="false">TuneWorld</string>
     <string name="settings">Settings</string>
     <string name="info_line">A4 = %1$d Hz · %2$s</string>
     <string name="reference_pitch">Reference pitch</string>

@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "saxtuner"
+rootProject.name = "tunetheworld"
 include(":app")

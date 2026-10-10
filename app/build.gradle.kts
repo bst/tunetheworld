@@ -38,13 +38,13 @@ abstract class DownloadSamples : DefaultTask() {
 }
 
 android {
-    namespace = "de.example.saxtuner"
+    namespace = "de.example.tunetheworld"
     compileSdk {
         version = release(37)
     }
 
     defaultConfig {
-        applicationId = "de.example.saxtuner"
+        applicationId = "de.example.tunetheworld"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
@@ -86,7 +86,7 @@ val downloadSamples = tasks.register<DownloadSamples>("downloadSamples") {
         "AltoSax.vib.ff.F5.stereo.aif" to "137921200cb7ccfa656f96fc0119157ddc47624bf8c037f815c68c888dddcf8c"
     )
     // Gradle user home survives `clean` and is shared between checkouts
-    outputDir = File(gradle.gradleUserHomeDir, "caches/saxtuner-samples/alto-saxophone")
+    outputDir = File(gradle.gradleUserHomeDir, "caches/tunetheworld-samples/alto-saxophone")
 }
 
 tasks.withType<Test>().configureEach {
