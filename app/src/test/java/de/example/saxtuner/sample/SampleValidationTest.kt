@@ -10,7 +10,7 @@ import java.io.File
 import kotlin.math.abs
 import kotlin.math.log2
 
-/** Runs the full detection chain on real alto saxophone recordings (see PLAN.md, phase 3b). */
+/** Runs the full detection chain on real alto saxophone recordings in concert and alto mode. */
 class SampleValidationTest {
     // octaveJump: the player's tone really jumps one octave up for a moment (checked by ear)
     private class Sample(val file: String, val midi: Int, val vibrato: Boolean, val octaveJump: Boolean = false)

@@ -74,7 +74,7 @@ fun TunerScreen(viewModel: TunerViewModel = viewModel()) {
         ) {
             Text(stringResource(R.string.app_title), style = MaterialTheme.typography.titleLarge)
             IconButton(onClick = { showSettings = true }) {
-                // No icon library (plan: AndroidX/Compose only), so a text glyph stands in for the gear
+                // No icon library (dependencies are limited to AndroidX/Compose), so a text glyph stands in for the gear
                 Text("⚙", fontSize = 24.sp, modifier = Modifier.semantics { contentDescription = settingsLabel })
             }
         }
