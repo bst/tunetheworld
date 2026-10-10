@@ -1,12 +1,12 @@
 package de.example.saxtuner.dsp
 
 import de.example.saxtuner.engine.TunerConfig
+import kotlin.math.PI
+import kotlin.math.sin
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Test
-import kotlin.math.PI
-import kotlin.math.sin
 
 class PitchPipelineTest {
     /** Feeds a 220 Hz sine of the given amplitude for one second; returns the last result. */

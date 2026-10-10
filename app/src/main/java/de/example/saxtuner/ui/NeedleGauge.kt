@@ -30,7 +30,7 @@ private val Green = Color(0xFF2E7D32)
 private val Yellow = Color(0xFFF9A825)
 private val Red = Color(0xFFC62828)
 
-private const val CENTER_ANGLE = 270f   // in Compose, 270 degrees points up
+private const val CENTER_ANGLE = 270f // in Compose, 270 degrees points up
 private const val DEGREES_PER_PERCENT = 1.2f
 
 private fun zoneColor(percent: Float): Color = when {

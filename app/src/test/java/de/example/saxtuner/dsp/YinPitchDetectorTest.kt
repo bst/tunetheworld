@@ -1,29 +1,28 @@
 package de.example.saxtuner.dsp
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
-import org.junit.Test
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.log2
 import kotlin.math.sin
 import kotlin.random.Random
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Test
 
 class YinPitchDetectorTest {
     private val sampleRate = 44100
     private fun detector() = YinPitchDetector(sampleRate, 4096, 90f, 1100f)
 
     /** Sum of sines at f0, 2*f0, 3*f0 ... with the given amplitudes. */
-    private fun tone(f0: Double, harmonics: FloatArray, n: Int = 4096): FloatArray =
-        FloatArray(n) { i ->
-            var s = 0.0
-            for (h in harmonics.indices) {
-                s += harmonics[h] * sin(2.0 * PI * f0 * (h + 1) * i / sampleRate)
-            }
-            s.toFloat()
+    private fun tone(f0: Double, harmonics: FloatArray, n: Int = 4096): FloatArray = FloatArray(n) { i ->
+        var s = 0.0
+        for (h in harmonics.indices) {
+            s += harmonics[h] * sin(2.0 * PI * f0 * (h + 1) * i / sampleRate)
         }
+        s.toFloat()
+    }
 
     private fun cents(measured: Float, expected: Double) = 1200.0 * log2(measured / expected)
 
@@ -35,7 +34,9 @@ class YinPitchDetectorTest {
     }
 
     @Test fun pureSineMiddle() = assertPitch(440.0, floatArrayOf(0.5f), 1.0)
+
     @Test fun pureSineLow() = assertPitch(103.83, floatArrayOf(0.5f), 1.0)
+
     @Test fun pureSineHigh() = assertPitch(1000.0, floatArrayOf(0.5f), 1.0)
 
     @Test

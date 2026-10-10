@@ -29,6 +29,7 @@ object AiffReader {
                     bits = buf.getShort(body + 6).toInt()
                     rate = extended(buf, body + 8)
                 }
+
                 "SSND" -> dataStart = body + 8 + buf.getInt(body) // skip offset and block size fields
             }
             pos = body + size + (size and 1) // chunks are padded to even length

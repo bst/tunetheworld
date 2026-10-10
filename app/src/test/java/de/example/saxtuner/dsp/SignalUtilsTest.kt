@@ -1,9 +1,9 @@
 package de.example.saxtuner.dsp
 
-import org.junit.Assert.assertEquals
-import org.junit.Test
 import kotlin.math.PI
 import kotlin.math.sin
+import org.junit.Assert.assertEquals
+import org.junit.Test
 
 class SignalUtilsTest {
     @Test

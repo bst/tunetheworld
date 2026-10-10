@@ -4,11 +4,11 @@ import de.example.saxtuner.dsp.PitchPipeline
 import de.example.saxtuner.engine.TunerConfig
 import de.example.saxtuner.music.NoteMapper
 import de.example.saxtuner.music.Transposition
-import org.junit.Assert.assertTrue
-import org.junit.Test
 import java.io.File
 import kotlin.math.abs
 import kotlin.math.log2
+import org.junit.Assert.assertTrue
+import org.junit.Test
 
 /** Runs the full detection chain on real alto saxophone recordings in concert and alto mode. */
 class SampleValidationTest {
@@ -20,7 +20,7 @@ class SampleValidationTest {
         Sample("AltoSax.NoVib.ff.Db3.stereo.aif", 49, false),
         Sample("AltoSax.NoVib.ff.D3.stereo.aif", 50, false, octaveJump = true),
         Sample("AltoSax.NoVib.ff.C5.stereo.aif", 72, false),
-        Sample("AltoSax.vib.ff.F5.stereo.aif", 77, true),
+        Sample("AltoSax.vib.ff.F5.stereo.aif", 77, true)
     )
 
     private companion object {
@@ -58,8 +58,18 @@ class SampleValidationTest {
 
     @Test
     fun alignsWithFileNamesInConcertAndAltoMode() {
-        val report = StringBuilder("\n%-34s %7s %8s %9s %8s %7s %7s\n".format(
-            "file", "scored", "med Hz", "med cents", "mad", "range", "onset"))
+        val report =
+            StringBuilder(
+                "\n%-34s %7s %8s %9s %8s %7s %7s\n".format(
+                    "file",
+                    "scored",
+                    "med Hz",
+                    "med cents",
+                    "mad",
+                    "range",
+                    "onset"
+                )
+            )
         val failures = ArrayList<String>()
 
         for (s in samples) {
@@ -67,7 +77,9 @@ class SampleValidationTest {
             val firstFull = TunerConfig.WINDOW_SIZE / TunerConfig.HOP_SIZE - 1
             val eligible = blocks.filter { it.index >= firstFull }
             val allScored = eligible.filter { it.hz != null }
-            fun fail(msg: String) { failures += "${s.file}: $msg" }
+            fun fail(msg: String) {
+                failures += "${s.file}: $msg"
+            }
 
             val ratio = allScored.size.toFloat() / eligible.size
             if (ratio < 0.70f) fail("only ${"%.0f".format(ratio * 100)} % of blocks scored")
@@ -77,7 +89,11 @@ class SampleValidationTest {
             fun isOctaveUp(b: Block) = abs(centsFromExpected(b.hz!!, s.midi) - 1200f) < 100f
             val octaveBlocks = allScored.filter { isOctaveUp(it) }
             if (s.octaveJump) {
-                if (octaveBlocks.size > MAX_OCTAVE_BLOCKS) fail("${octaveBlocks.size} octave-jump blocks, at most $MAX_OCTAVE_BLOCKS allowed")
+                if (octaveBlocks.size >
+                    MAX_OCTAVE_BLOCKS
+                ) {
+                    fail("${octaveBlocks.size} octave-jump blocks, at most $MAX_OCTAVE_BLOCKS allowed")
+                }
                 val contiguous = octaveBlocks.isEmpty() ||
                     octaveBlocks.last().index - octaveBlocks.first().index == octaveBlocks.size - 1
                 if (!contiguous) fail("octave-jump blocks are not one single run")
@@ -110,11 +126,27 @@ class SampleValidationTest {
                 if (share < 0.95f) fail("$mode: only ${"%.0f".format(share * 100)} % blocks show the expected note")
             }
 
-            report.append("%-34s %6.0f%% %8.2f %9.1f %8.1f %7.1f %5.0fms\n".format(
-                s.file, ratio * 100, median(scored.map { it.hz!! }), medCents, mad, range, onsetMs))
+            report.append(
+                "%-34s %6.0f%% %8.2f %9.1f %8.1f %7.1f %5.0fms\n".format(
+                    s.file,
+                    ratio * 100,
+                    median(
+                        scored.map {
+                            it.hz!!
+                        }
+                    ),
+                    medCents,
+                    mad,
+                    range,
+                    onsetMs
+                )
+            )
             if (octaveBlocks.isNotEmpty()) {
-                report.append("    ${octaveBlocks.size} octave-up blocks (indices ${octaveBlocks.first().index}..${octaveBlocks.last().index})" +
-                    if (s.octaveJump) ", expected\n" else ", UNEXPECTED\n")
+                report.append(
+                    "    ${octaveBlocks.size} octave-up blocks " +
+                        "(indices ${octaveBlocks.first().index}..${octaveBlocks.last().index})" +
+                        if (s.octaveJump) ", expected\n" else ", UNEXPECTED\n"
+                )
             }
         }
         println(report)

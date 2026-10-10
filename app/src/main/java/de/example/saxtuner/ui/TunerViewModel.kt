@@ -13,9 +13,9 @@ import de.example.saxtuner.engine.TunerConfig
 import de.example.saxtuner.engine.TunerEngine
 import de.example.saxtuner.music.NoteMapper
 import de.example.saxtuner.music.Transposition
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

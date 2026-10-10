@@ -37,7 +37,8 @@ fun PermissionScreen(modifier: Modifier = Modifier) {
         // The activity re-checks the permission on resume; here we only detect "don't ask again"
         if (!granted && activity != null) {
             permanentlyDenied = !ActivityCompat.shouldShowRequestPermissionRationale(
-                activity, Manifest.permission.RECORD_AUDIO
+                activity,
+                Manifest.permission.RECORD_AUDIO
             )
         }
     }
@@ -61,7 +62,10 @@ fun PermissionScreen(modifier: Modifier = Modifier) {
         Button(onClick = {
             if (permanentlyDenied) {
                 context.startActivity(
-                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null))
+                    Intent(
+                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        Uri.fromParts("package", context.packageName, null)
+                    )
                 )
             } else {
                 launcher.launch(Manifest.permission.RECORD_AUDIO)

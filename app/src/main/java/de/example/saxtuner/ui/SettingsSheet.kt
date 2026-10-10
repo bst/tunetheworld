@@ -65,8 +65,11 @@ fun SettingsSheet(
             Text(stringResource(R.string.settings), style = MaterialTheme.typography.titleLarge)
 
             Text(stringResource(R.string.reference_pitch), style = MaterialTheme.typography.titleMedium)
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 TextButton(onClick = { onReferenceChange(settings.referenceHz - 1) }) { Text("−") }
                 Text(
                     stringResource(R.string.hertz_format, settings.referenceHz.toString()),
@@ -77,7 +80,8 @@ fun SettingsSheet(
             Slider(
                 value = settings.referenceHz.toFloat(),
                 onValueChange = { onReferenceChange(it.roundToInt()) },
-                valueRange = SettingsRepository.MIN_REFERENCE_HZ.toFloat()..SettingsRepository.MAX_REFERENCE_HZ.toFloat(),
+                valueRange =
+                    SettingsRepository.MIN_REFERENCE_HZ.toFloat()..SettingsRepository.MAX_REFERENCE_HZ.toFloat(),
                 steps = SettingsRepository.MAX_REFERENCE_HZ - SettingsRepository.MIN_REFERENCE_HZ - 1
             )
             Button(onClick = { onReferenceChange(SettingsRepository.DEFAULT_REFERENCE_HZ) }) {
@@ -122,7 +126,17 @@ fun SettingsSheet(
                         },
                         shape = SegmentedButtonDefaults.itemShape(index, languages.size)
                     ) {
-                        Text(stringResource(if (language == AppLanguage.DE) R.string.language_de else R.string.language_en))
+                        Text(
+                            stringResource(
+                                if (language ==
+                                    AppLanguage.DE
+                                ) {
+                                    R.string.language_de
+                                } else {
+                                    R.string.language_en
+                                }
+                            )
+                        )
                     }
                 }
             }

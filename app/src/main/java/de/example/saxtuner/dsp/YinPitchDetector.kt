@@ -11,7 +11,7 @@ class YinPitchDetector(
     maxFreqHz: Float,
     private val threshold: Float = 0.15f
 ) {
-    private val w = windowSize / 2                                   // integration window
+    private val w = windowSize / 2 // integration window
     private val tauMin = floor(sampleRate / maxFreqHz).toInt().coerceAtLeast(2)
     private val tauMax = ceil(sampleRate / minFreqHz).toInt().coerceAtMost(w - 2)
     private val diff = FloatArray(tauMax + 2)
@@ -52,7 +52,9 @@ class YinPitchDetector(
         if (found == -1) return null
 
         // Step 4: parabolic interpolation for sub-sample accuracy
-        val s0 = cmnd[found - 1]; val s1 = cmnd[found]; val s2 = cmnd[found + 1]
+        val s0 = cmnd[found - 1]
+        val s1 = cmnd[found]
+        val s2 = cmnd[found + 1]
         val denom = s0 - 2f * s1 + s2
         val refined = if (denom == 0f) found.toFloat() else found + 0.5f * (s0 - s2) / denom
 

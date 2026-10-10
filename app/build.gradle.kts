@@ -4,12 +4,16 @@ import java.security.MessageDigest
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ktlint)
 }
 
 /** Downloads the test recordings into a cache directory, skipping files that are already present and intact. */
 abstract class DownloadSamples : DefaultTask() {
     @get:Input abstract val baseUrl: Property<String>
-    @get:Input abstract val files: MapProperty<String, String> // file name to SHA-256
+
+    // File name to SHA-256
+    @get:Input abstract val files: MapProperty<String, String>
+
     @get:OutputDirectory abstract val outputDir: DirectoryProperty
 
     @TaskAction
@@ -59,6 +63,15 @@ android {
     buildFeatures {
         compose = true
     }
+    lint {
+        warningsAsErrors = true
+        // Warnings that existed when warningsAsErrors was switched on; new ones fail the build
+        baseline = file("lint-baseline.xml")
+    }
+}
+
+ktlint {
+    version = libs.versions.ktlint
 }
 
 // Real alto saxophone recordings used by SampleValidationTest; not part of the app or the repository.
@@ -70,7 +83,7 @@ val downloadSamples = tasks.register<DownloadSamples>("downloadSamples") {
         "AltoSax.NoVib.ff.Db3.stereo.aif" to "22cf0a09d6ffef7988a3ce761fcf0b2e3f3d568e94fe9fa94aa291354546df83",
         "AltoSax.NoVib.ff.D3.stereo.aif" to "7b9701e53e0ef9c711542bdee1642e54778b3ac1e82294751ddc8c750d9eb69a",
         "AltoSax.NoVib.ff.C5.stereo.aif" to "0b4c5a57d75c1f35f5e5a30dd83a3af64629dc36e49e2f7531a95338cf3d2422",
-        "AltoSax.vib.ff.F5.stereo.aif" to "137921200cb7ccfa656f96fc0119157ddc47624bf8c037f815c68c888dddcf8c",
+        "AltoSax.vib.ff.F5.stereo.aif" to "137921200cb7ccfa656f96fc0119157ddc47624bf8c037f815c68c888dddcf8c"
     )
     // Gradle user home survives `clean` and is shared between checkouts
     outputDir = File(gradle.gradleUserHomeDir, "caches/saxtuner-samples/alto-saxophone")

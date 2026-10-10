@@ -10,7 +10,9 @@ import androidx.annotation.RequiresPermission
 import de.example.saxtuner.engine.TunerConfig
 
 /** Wraps [AudioRecord]; delivers mono float blocks at [TunerConfig.SAMPLE_RATE]. */
-class AudioInput @RequiresPermission(Manifest.permission.RECORD_AUDIO) constructor(context: Context) {
+class AudioInput
+@RequiresPermission(Manifest.permission.RECORD_AUDIO)
+constructor(context: Context) {
     private val record: AudioRecord
 
     init {
@@ -23,7 +25,9 @@ class AudioInput @RequiresPermission(Manifest.permission.RECORD_AUDIO) construct
                 MediaRecorder.AudioSource.VOICE_RECOGNITION
             }
         val minBytes = AudioRecord.getMinBufferSize(
-            TunerConfig.SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_FLOAT
+            TunerConfig.SAMPLE_RATE,
+            AudioFormat.CHANNEL_IN_MONO,
+            AudioFormat.ENCODING_PCM_FLOAT
         )
         val bufferBytes = maxOf(minBytes * 4, TunerConfig.HOP_SIZE * 4 * 4)
         record = AudioRecord(

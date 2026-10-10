@@ -4,6 +4,7 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import de.example.saxtuner.music.Transposition
+import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -13,7 +14,6 @@ import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import java.io.File
 
 class SettingsRepositoryTest {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)

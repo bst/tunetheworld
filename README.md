@@ -85,7 +85,17 @@ Requirements: JDK 17 or newer (the Gradle daemon toolchain is set to 21) and an 
 ./gradlew assembleDebug        # build the APK
 ./gradlew installDebug         # install on a connected device or emulator
 ./gradlew test                 # run unit tests (no device needed)
+./gradlew lintDebug            # run Android lint
+./gradlew ktlintCheck          # check Kotlin code style
+./gradlew ktlintFormat         # fix Kotlin code style where possible
 ```
+
+Git hooks in `.githooks/` run these checks. Enable them once per clone with `git config core.hooksPath .githooks`.
+
+- **pre-commit** runs ktlint and Android lint. Lint treats warnings as errors. Warnings that already existed are listed in `app/lint-baseline.xml` and ignored.
+- **pre-push** runs the unit tests.
+
+ktlint uses the Android Studio code style (see `.editorconfig`), with Composable functions allowed to start with a capital letter.
 
 The app needs the `RECORD_AUDIO` permission. On first launch it explains why and asks for it. If permission was permanently denied, it links to the system app settings.
 

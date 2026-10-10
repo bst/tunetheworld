@@ -10,17 +10,16 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.isActive
 
 /** Reads microphone blocks and hands them to [PitchPipeline]. The caller must hold RECORD_AUDIO. */
-class TunerEngine(
-    private val audioInput: AudioInput,
-    private val pipeline: PitchPipeline = PitchPipeline()
-) {
+class TunerEngine(private val audioInput: AudioInput, private val pipeline: PitchPipeline = PitchPipeline()) {
     /** One analysis step: the smoothed frequency (null = no usable tone) and the block level in dBFS. */
     data class Frame(val frequencyHz: Float?, val levelDb: Float)
 
     /** Level gate in dBFS; takes effect on the next block. */
     var gateDb: Float
         get() = pipeline.gateDb
-        set(value) { pipeline.gateDb = value }
+        set(value) {
+            pipeline.gateDb = value
+        }
 
     /** Emits one [Frame] per block. */
     fun frames(): Flow<Frame> = flow {

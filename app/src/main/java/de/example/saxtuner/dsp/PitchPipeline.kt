@@ -9,8 +9,11 @@ import de.example.saxtuner.engine.TunerConfig
  */
 class PitchPipeline(
     private val detector: YinPitchDetector = YinPitchDetector(
-        TunerConfig.SAMPLE_RATE, TunerConfig.WINDOW_SIZE,
-        TunerConfig.MIN_FREQ_HZ, TunerConfig.MAX_FREQ_HZ, TunerConfig.YIN_THRESHOLD
+        TunerConfig.SAMPLE_RATE,
+        TunerConfig.WINDOW_SIZE,
+        TunerConfig.MIN_FREQ_HZ,
+        TunerConfig.MAX_FREQ_HZ,
+        TunerConfig.YIN_THRESHOLD
     ),
     private val smoother: PitchSmoother = PitchSmoother()
 ) {
