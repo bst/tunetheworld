@@ -69,7 +69,6 @@ app/src/main/java/de/example/saxtuner/
   ui/                  TunerViewModel, TunerScreen, NeedleGauge, LevelMeter, SettingsSheet, PermissionScreen
 app/src/main/res/      strings in values/ (English) and values-de/ (German)
 app/src/test/          unit tests, AiffReader test helper
-samples/alt saxophone/ four alto sax AIFF recordings, used only by tests
 ```
 
 ## Building
@@ -98,9 +97,9 @@ The unit tests run on the JVM and need no device:
 - `YinPitchDetectorTest`: pure sines at 104/440/1000 Hz within 1 cent, a sax-like harmonic tone that must not be detected an octave high, noise, silence, and a runtime budget.
 - `PitchSmootherTest`, `SignalUtilsTest`, `PitchPipelineTest`: smoothing, octave guard, RMS and dB conversion, and gate behaviour.
 - `SettingsRepositoryTest`: defaults, clamping, and fallback for unknown stored values.
-- `SampleValidationTest`: runs the four recordings in `samples/alt saxophone/` through the full pipeline in concert and alto mode. It checks the share of detected blocks, correct note and octave, no octave errors, median deviation, stability, vibrato swing, and onset time. It prints a measurement table for each file. The D3 recording really does jump up an octave briefly (confirmed by ear), so the test allows that one short stretch.
+- `SampleValidationTest`: runs four alto saxophone recordings from the [University of Iowa Musical Instrument Samples](https://theremin.music.uiowa.edu/MIS-Pitches-2012/MISEbAltoSaxophone2012.html) through the full pipeline in concert and alto mode. It checks the share of detected blocks, correct note and octave, no octave errors, median deviation, stability, vibrato swing, and onset time. It prints a measurement table for each file. The D3 recording really does jump up an octave briefly (confirmed by ear), so the test allows that one short stretch.
 
-The sample directory is passed to the tests through the `samples.dir` system property, set in [app/build.gradle.kts](app/build.gradle.kts). If the directory is missing, the test fails rather than being skipped.
+The recordings are not part of the repository. Before the tests run, the `downloadSamples` task in [app/build.gradle.kts](app/build.gradle.kts) downloads them, checks their SHA-256 hashes, and stores them in `~/.gradle/caches/saxtuner-samples/alto-saxophone/`. Once they are cached, no network access is needed. The directory is passed to the tests through the `samples.dir` system property. If the download fails, the build fails rather than skipping the test.
 
 ## Testing on the emulator
 
