@@ -1,0 +1,183 @@
+# Pitch detection
+
+This document explains how Tune the World turns microphone samples into a note and a deviation in cents. It says which parts come from published methods, which are this project's own additions, and why each one is there. The short version is in the [README](README.md#how-it-works). All constants live in [TunerConfig.kt](app/src/main/java/de/example/tunetheworld/engine/TunerConfig.kt).
+
+The core is the YIN algorithm [1], with the difference function computed by FFT [1, 3, 4], a first-dip rule borrowed from the McLeod Pitch Method [2], an octave check for low notes, and median smoothing [5].
+
+## Overview
+
+```mermaid
+flowchart LR
+    A["microphone<br/>44.1 kHz mono"] --> B["sliding window<br/>4096 samples, hop 1024"]
+    B --> C{"level gate<br/>both ends of window"}
+    C -- too quiet --> X["no reading"]
+    C -- loud enough --> D["YIN<br/>30–4200 Hz"]
+    D --> E{"confidence ≥ 0.80"}
+    E -- no --> X
+    E -- yes --> F["median of 5<br/>+ jump guard"]
+    F --> G["note + cents<br/>reference, transposition"]
+```
+
+| Stage | Code |
+|---|---|
+| Audio input | [AudioInput.kt](app/src/main/java/de/example/tunetheworld/audio/AudioInput.kt) |
+| Window, gate, confidence filter | [PitchPipeline.kt](app/src/main/java/de/example/tunetheworld/dsp/PitchPipeline.kt) |
+| YIN | [YinPitchDetector.kt](app/src/main/java/de/example/tunetheworld/dsp/YinPitchDetector.kt) |
+| Difference function by FFT | [DifferenceFunction.kt](app/src/main/java/de/example/tunetheworld/dsp/DifferenceFunction.kt) |
+| Smoothing | [PitchSmoother.kt](app/src/main/java/de/example/tunetheworld/dsp/PitchSmoother.kt) |
+| Note and cents | [NoteMapper.kt](app/src/main/java/de/example/tunetheworld/music/NoteMapper.kt) |
+
+All DSP code is plain Kotlin without Android dependencies, so the same code runs in the app and in the JVM unit tests against real recordings. Arrays are allocated once; the per-block path allocates nothing except the small result object.
+
+## 1. Audio input
+
+The app records mono float samples at 44.1 kHz. It asks for the `UNPROCESSED` audio source where the device supports it and falls back to `VOICE_RECOGNITION`. It never uses `MIC`: on many phones that source turns on noise suppression and automatic gain control, which can distort the waveform and pump the level.
+
+## 2. Window and level gate
+
+Analysis runs on a sliding window of 4096 samples (about 93 ms). Every 1024 new samples (about 23 ms), the window moves on and is analysed again, about 43 times per second.
+
+Why 4096: YIN compares the signal with a copy of itself shifted by up to one period. The integration window is half the buffer, w = 2048 samples. The longest period searched is 1470 samples (30 Hz). Together they need 2048 + 1471 = 3519 samples, so 4096 is the next power of two that fits. A longer window would be steadier but slower to react.
+
+**Level gate.** Below a configurable level (−40 dBFS by default, adjustable from −60 to −30 dBFS) nothing is analysed. The gate checks the RMS level of both the newest and the oldest 1024 samples in the window. Checking only the newest block is not enough: in the first blocks of a note, the window still contains the silence before it, and YIN reports unreliable pitches for those blocks. This rule is our own addition.
+
+## 3. YIN
+
+YIN was published by de Cheveigné and Kawahara in 2002 [1]. It is a time-domain method: instead of looking for peaks in a spectrum, it looks for the lag τ at which the signal best matches a shifted copy of itself. That lag is the period, and the frequency is sample rate / τ.
+
+The search covers lags from τ_min = ⌊44100 / 4200⌋ = 10 to τ_max = ⌈44100 / 30⌉ = 1470 samples, which is 30 Hz (just below B0, the lowest string of a five-string bass) to 4200 Hz (just above C8, the top of the piccolo).
+
+### Step 1: difference function
+
+```
+d(τ) = Σ_{j=0}^{w−1} (x[j] − x[j+τ])²
+```
+
+d(τ) is zero when the signal repeats exactly after τ samples and small when it nearly repeats. This is step 2 of the paper. The paper's step 1, plain autocorrelation, is the starting point it improves on and is not used here. Computing d directly takes w · τ_max ≈ 3 million multiply-adds per analysis; [section 4](#4-the-difference-function-by-fft) explains how the FFT avoids that.
+
+### Step 2: cumulative mean normalized difference (CMND)
+
+```
+d′(0) = 1
+d′(τ) = d(τ) / ((1/τ) · Σ_{j=1}^{τ} d(j))
+```
+
+Raw d(τ) starts at zero for τ = 0 and dips at every multiple of the period, so the smallest value is not a reliable pick. Dividing by the running mean removes the dip at zero and puts all dips on one scale: values near 0 mean "very periodic at this lag", values near 1 mean "no better than average". This is step 3 of the paper.
+
+### Step 3: choosing the dip
+
+YIN's absolute threshold (step 4 of the paper) takes the first lag where d′ drops below a threshold, here 0.15, and then walks down to the bottom of that dip. Taking the first dip rather than the deepest one prevents the most common error of pitch detectors: picking two or three times the period, which reads an octave or a twelfth too low.
+
+**Near-deepest rule.** Plain YIN can go wrong the other way on high notes. For the clarinet's B♭6 in the test recordings, d′ is 0.14 at half the period, just under the threshold, and 0.01 at the true period. Plain YIN would read an octave too high. So a dip is only accepted if it is also within 0.1 of the deepest dip in the search range:
+
+```
+accept = min(0.15, deepest + 0.1)
+```
+
+The idea comes from the McLeod Pitch Method [2], which accepts the first peak of its normalized function that reaches a fixed fraction of the highest peak. Here it is applied to YIN's d′ as an additive margin.
+
+Unlike the paper, which falls back to the global minimum when nothing is below the threshold, the detector reports no pitch in that case. A tuner showing nothing is better than one showing a guess.
+
+### Step 3b: octave check for low notes
+
+On low notes the fundamental is often much weaker than the second harmonic: low strings, the saxophone's low register, and notes dying away. The signal then nearly repeats after half the period, d′ dips below the threshold there first, and the reading is an octave too high.
+
+The check: if the chosen lag is 100 samples or more (below about 440 Hz) and its d′ is above 0.005, look at twice the lag (the smallest raw d within ±2 samples of it). If the raw difference there is less than a fifth of the raw difference at the chosen lag, twice the lag is taken as the period.
+
+The conditions come from testing against the recordings:
+
+- **Raw d, not d′.** d′ divides by the running mean, which grows with τ, so it favours longer lags. Comparing d′ values pushed clean high notes down an octave.
+- **Only for lags of 100 or more.** At short lags the true period usually falls between whole samples. Twice the period can then land almost exactly on a whole sample and look deeper by chance. The violin's E7 has a period of 16.7 samples: lag 16 gives a shallow dip and lag 33 a deep one, although 16.7 is correct.
+- **Only when the first dip is above 0.005.** On a clean tone both dips are close to zero, and their ratio is just noise.
+
+This check is our own heuristic, not taken from a paper. It fixes the octave errors in the test recordings without breaking any of them. One known limit remains: as the cello's C2 fades out, its fundamental almost disappears, and the end of the note still reads an octave up. The tests tolerate that in the fade-out only.
+
+### Step 4: parabolic interpolation
+
+The dip is at a whole-number lag, but the true period usually lies between two samples. At 440 Hz a period is about 100 samples, so one sample is about 17 cents, far too coarse for a tuner. Like step 5 of the paper, the detector fits a parabola through the dip and its two neighbours and takes the parabola's minimum:
+
+```
+τ_refined = τ + ½ · (d′(τ−1) − d′(τ+1)) / (d′(τ−1) − 2·d′(τ) + d′(τ+1))
+f = 44100 / τ_refined
+```
+
+The paper's step 6 ("best local estimate", re-running the search around the chosen point in nearby frames) is not used. The smoothing in [section 6](#6-smoothing) takes its place.
+
+### Confidence
+
+The confidence is 1 − d′ at the chosen lag, clamped to 0–1. The paper calls d′ at the dip a measure of aperiodicity. Readings below 0.80 are dropped. Because the threshold is 0.15, this mostly filters out cases where the octave check moved to twice the lag and the dip there is less clean.
+
+## 4. The difference function by FFT
+
+Expanding the square splits d(τ) into three terms, as the YIN paper notes in its equation (7) [1]:
+
+```
+d(τ) = Σ x[j]²  +  Σ x[j+τ]²  −  2 · Σ x[j]·x[j+τ]
+        energy of     energy of        cross-correlation r(τ)
+        the head      the shifted part
+```
+
+- The first term is the same for every τ.
+- The second is a sliding sum. With prefix sums E[i] = Σ_{j<i} x[j]², it is E[τ+w] − E[τ], one subtraction per lag.
+- The third is the cross-correlation of the first w samples with the whole buffer. By the correlation theorem, a correlation is a product in the frequency domain: r = IFFT(conj(A) · B), where A and B are the FFTs of the two signals [4, section 13.2]. With an FFT [3] this takes O(n log n) for all lags at once instead of O(w · τ_max).
+
+Implementation details in [DifferenceFunction.kt](app/src/main/java/de/example/tunetheworld/dsp/DifferenceFunction.kt):
+
+- **FFT size 4096.** Both signals are zero-padded to n ≥ w + τ_max, so the circular correlation computed by the FFT does not wrap around into the lags that are needed.
+- **Two real FFTs for the price of one.** The first w samples go into the real part and the whole buffer into the imaginary part of one complex FFT. The two spectra are separated afterwards using their symmetry [4, section 12.3]:
+  ```
+  A[k] = (Z[k] + conj Z[n−k]) / 2
+  B[k] = (Z[k] − conj Z[n−k]) / 2i
+  ```
+- **Inverse by the forward transform.** The inverse FFT is computed as conj(FFT(conj X)) / n. Only the real part is needed, because the correlation of real signals is real.
+- **Double precision.** Near a dip, d(τ) is a small difference of large terms, so float rounding would eat the information that matters. Values that come out slightly negative from rounding (silence, a perfectly periodic tone) are clamped to 0.
+- **Radix-2, iterative, in place**, with precomputed twiddle factors and bit-reversal table. Nothing is allocated per call.
+
+On a desktop JVM this takes about 240 µs per analysis instead of about 2.8 ms for the direct loop, roughly 12× faster. Across all 42 test recordings (5940 analysis blocks), the FFT version gives the same readings as the direct loop to within 0.002 cents, and no block changes between "note" and "no note". [DifferenceFunctionTest](app/src/test/java/de/example/tunetheworld/dsp/DifferenceFunctionTest.kt) compares it with the textbook definition, computed in double precision, on noise and harmonic tones from 32.7 Hz to 2637 Hz.
+
+## 5. Precision and latency
+
+Measured by the unit tests on synthetic tones:
+
+| Pure sine | Test limit |
+|---|---|
+| 30.87 Hz (B0), 41.20 Hz (E1), 103.83 Hz, 440 Hz, 1000 Hz | 1 cent |
+| 2637 Hz (E7) | 3 cents |
+| 4186 Hz (C8) | 5 cents |
+| 440 Hz with added noise | 3 cents |
+| harmonic tones with a weak fundamental (65.41 Hz, 116.54 Hz) | 2 cents, right octave |
+
+High notes have short periods (10 samples at 4186 Hz), so the parabola has fewer points to work with. The usual tuning target of a few cents is still met. On real recordings, the median block-to-block jitter of steady notes must stay at or below 3 cents; see [SampleValidationTest](app/src/test/java/de/example/tunetheworld/sample/SampleValidationTest.kt).
+
+Latency: a reading reflects the last 93 ms of sound and is updated every 23 ms. The median of 5 adds about two hops (about 46 ms) of delay. In the recordings a note is shown within 300 ms of its first loud block, usually much sooner.
+
+## 6. Smoothing
+
+The detector's readings go through a median of the last 5 values [5]. A median removes single wrong readings completely, where a mean would smear them in, and it follows a real pitch change after a few blocks.
+
+A jump guard sits in front of it: a reading more than 0.8 semitones away from the current median is held back. Only when three such readings in a row agree with each other (within 0.8 semitones) is it treated as a new note, and the median starts over from there. Single octave errors are therefore never shown. Vibrato stays visible, because it moves the pitch by much less than 0.8 semitones. The tests check that vibrato notes still show a range of at least 8 cents.
+
+## 7. From frequency to note
+
+```
+m = 69 + 12 · log2(f / ref)      MIDI note number, ref = concert A4 (default 440 Hz)
+n = round(m)                     nearest sounding note
+deviation = (m − n) · 100        in cents, −50 … +50
+displayed note = n + transposition
+```
+
+This is twelve-tone equal temperament, the same mapping MIDI uses. The transposition is added after rounding, so it changes the note name but never the deviation. The reference always refers to concert A4, whatever the instrument's transposition.
+
+## 8. Testing
+
+- **Unit tests** check each stage on synthetic signals: sines across the range, harmonic tones with a weak fundamental, noise, silence, and the FFT against the direct definition.
+- **Real recordings:** [SampleValidationTest](app/src/test/java/de/example/tunetheworld/sample/SampleValidationTest.kt) runs the complete pipeline on 42 recordings of 12 instruments from the University of Iowa Musical Instrument Samples [6]. They range from double bass to piccolo and include vibrato and plucked notes. Each note is split into attack, settled part and release, and the settled part is judged strictly: the right note in at least 95 % of blocks, median deviation within 50 cents, median jitter at most 3 cents. The recordings are downloaded on demand and checked against SHA-256 hashes listed in [samples.tsv](app/src/test/resources/samples.tsv); the README explains the license.
+
+## References
+
+1. A. de Cheveigné and H. Kawahara, "YIN, a fundamental frequency estimator for speech and music," *Journal of the Acoustical Society of America*, vol. 111, no. 4, pp. 1917–1930, 2002. [doi:10.1121/1.1458024](https://doi.org/10.1121/1.1458024)
+2. P. McLeod and G. Wyvill, "A smarter way to find pitch," in *Proceedings of the International Computer Music Conference (ICMC)*, Barcelona, 2005.
+3. J. W. Cooley and J. W. Tukey, "An algorithm for the machine calculation of complex Fourier series," *Mathematics of Computation*, vol. 19, no. 90, pp. 297–301, 1965. [doi:10.1090/S0025-5718-1965-0178586-1](https://doi.org/10.1090/S0025-5718-1965-0178586-1)
+4. W. H. Press, S. A. Teukolsky, W. T. Vetterling and B. P. Flannery, *Numerical Recipes: The Art of Scientific Computing*, 3rd ed., Cambridge University Press, 2007. Section 12.3 (FFT of two real functions simultaneously) and section 13.2 (correlation using the FFT).
+5. L. R. Rabiner, M. R. Sambur and C. E. Schmidt, "Applications of a nonlinear smoothing algorithm to speech processing," *IEEE Transactions on Acoustics, Speech, and Signal Processing*, vol. 23, no. 6, pp. 552–557, 1975. [doi:10.1109/TASSP.1975.1162749](https://doi.org/10.1109/TASSP.1975.1162749)
+6. University of Iowa Electronic Music Studios, *Musical Instrument Samples*. <https://theremin.music.uiowa.edu/MIS.html>
