@@ -98,11 +98,12 @@ class YinPitchDetectorTest {
     fun runtime() {
         val d = detector()
         val buf = tone(440.0, floatArrayOf(0.5f))
-        repeat(50) { d.detect(buf) } // warm-up
+        repeat(500) { d.detect(buf) } // warm-up, so the JIT has compiled the hot loops
         val start = System.nanoTime()
         repeat(1000) { d.detect(buf) }
         val seconds = (System.nanoTime() - start) / 1e9
         println("1000 detect() calls: $seconds s")
-        assertTrue("took $seconds s", seconds < 5.0)
+        // About 0.35 s on a desktop JVM with the FFT difference function (2.8 s with the plain loop); room for slow CI
+        assertTrue("took $seconds s", seconds < 1.5)
     }
 }

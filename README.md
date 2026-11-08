@@ -31,7 +31,7 @@ Version 1 is feature-complete and has been checked on the emulator and on a real
 | Emulator check (host audio routed through a virtual PipeWire microphone) | Done |
 | Testing on a real device | Done, works as expected |
 
-`./gradlew test` runs 41 unit tests in 9 test classes, and all of them pass.
+`./gradlew test` runs 45 unit tests in 10 test classes, and all of them pass.
 
 Known gaps:
 
@@ -68,7 +68,7 @@ flowchart LR
   - A dip is only accepted if it is within 0.1 of the deepest dip. Otherwise a shallow dip at half the period can win on high notes (clarinet B♭6).
   - For lags of 100 samples or more (below about 440 Hz), it checks twice the lag. If the raw difference there is less than a fifth, that is taken as the period. This catches low notes whose second harmonic is much louder than the fundamental, which is common on low strings and the saxophone's low register. It is not used for short lags, because there the period falls between whole samples and twice the period can look deeper by chance.
 
-  `detect()` allocates nothing. The level gate checks both ends of the analysis window, so a note's first blocks are not analysed while the window still holds the silence before it.
+  The difference function is computed with an FFT ([DifferenceFunction.kt](app/src/main/java/de/example/tunetheworld/dsp/DifferenceFunction.kt)): expanding the square leaves two energy terms (running sums) and a cross-correlation, which one forward and one inverse FFT of size 4096 give for every lag at once. Everything is in double precision, because near a dip the result is a small difference of large terms. This is about 12× faster than the plain loop it replaced (about 240 µs instead of 2.8 ms per analysis on a desktop JVM). Across all 42 test recordings it gives the same readings within 0.002 cents. `detect()` allocates nothing. The level gate checks both ends of the analysis window, so a note's first blocks are not analysed while the window still holds the silence before it.
 - **Smoothing:** a median over 5 values. A jump of more than 0.8 semitones is ignored, unless three consecutive values agree on it, in which case it counts as a real note change ([PitchSmoother.kt](app/src/main/java/de/example/tunetheworld/dsp/PitchSmoother.kt)).
 - **Note math:** `m = 69 + 12·log2(f / ref)`. The nearest sounding note is `n = round(m)` and the deviation is `(m − n) · 100` %. The transposition is added after rounding, and the reference pitch always means concert A4 ([NoteMapper.kt](app/src/main/java/de/example/tunetheworld/music/NoteMapper.kt)). All calculation uses the pitch class index (0–11). The name comes from [NoteNames.kt](app/src/main/java/de/example/tunetheworld/music/NoteNames.kt) only at display time, because "B" means different notes in German and English.
 - **Tuning constants** are all in [TunerConfig.kt](app/src/main/java/de/example/tunetheworld/engine/TunerConfig.kt).
@@ -122,6 +122,7 @@ The unit tests run on the JVM and need no device:
 
 - `NoteMapperTest`, `NoteNamesTest`, `TranspositionTest`: frequency to note and percent with and without transposition, German/English names, the key and the sounding note of a written C.
 - `YinPitchDetectorTest`: pure sines from 31 Hz to 4186 Hz (within 1 cent up to 1000 Hz, 3–5 cents at the top), sax-like and low-string tones with a weak fundamental that must not be detected an octave high, noise, silence, and a runtime budget.
+- `DifferenceFunctionTest`: the FFT difference function matches the plain definition (computed in double precision) on noise and harmonic tones, keeps exact zeros at the period of a perfectly periodic tone, and gives zero for silence.
 - `PitchSmootherTest`, `SignalUtilsTest`, `PitchPipelineTest`: smoothing, octave guard, RMS and dB conversion, and gate behaviour.
 - `SettingsRepositoryTest`: defaults, clamping, migration of the version 1 modes, and fallback for unknown stored values.
 - `SampleValidationTest`: runs 42 recordings from the [University of Iowa Musical Instrument Samples](https://theremin.music.uiowa.edu/MIS.html) through the full pipeline. There are usually three notes per instrument (low, middle, high), from double bass C1 (32.7 Hz) to violin E7 (2637 Hz). The instruments are alto sax, double bass, cello, violin, flute, B♭ clarinet, trumpet, horn, tenor trombone, tuba, bassoon and oboe, bowed and plucked strings included. Each recording is checked in concert pitch and in its instrument's usual transposition. The test splits every note into three phases:

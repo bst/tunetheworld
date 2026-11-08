@@ -14,21 +14,15 @@ class YinPitchDetector(
     private val w = windowSize / 2 // integration window
     private val tauMin = floor(sampleRate / maxFreqHz).toInt().coerceAtLeast(2)
     private val tauMax = ceil(sampleRate / minFreqHz).toInt().coerceAtMost(w - 2)
+    private val difference = DifferenceFunction(w, tauMax + 1)
     private val diff = FloatArray(tauMax + 2)
     private val cmnd = FloatArray(tauMax + 2)
 
     fun detect(buffer: FloatArray): PitchResult? {
-        require(buffer.size >= w + tauMax + 1)
+        require(buffer.size >= difference.inputSize)
 
-        // Step 1: difference function
-        for (tau in 1..tauMax + 1) {
-            var sum = 0f
-            for (j in 0 until w) {
-                val d = buffer[j] - buffer[j + tau]
-                sum += d * d
-            }
-            diff[tau] = sum
-        }
+        // Step 1: difference function, computed with an FFT
+        difference.compute(buffer, diff)
 
         // Step 2: cumulative mean normalized difference
         cmnd[0] = 1f

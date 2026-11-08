@@ -6,7 +6,7 @@ What comes next for Tune the World. Version 1 is feature-complete and tested on 
 
 In rough order:
 
-1. **Check the wider range on a real device.** The detector now searches 30–4200 Hz instead of 90–1100 Hz, which makes each analysis about 3× more expensive (3.5 ms on a desktop JVM, about 43 analyses per second). Measure the CPU load and battery use on the phone. If it is too high, compute the YIN difference function with an FFT (pure Kotlin, in double precision), which cuts the cost by roughly 10×. The `runtime` test in `YinPitchDetectorTest` is now close to its 5 s limit and could become flaky on slow CI runners; recheck its limit then.
+1. **Check the wider range on a real device.** The detector now searches 30–4200 Hz. With the FFT difference function one analysis takes about 240 µs on a desktop JVM, less than the old 90–1100 Hz loop. Confirm on the phone that CPU load and battery use are low.
 2. **Prepare for open source.**
    - Choose a license and add a `LICENSE` file. It must be compatible with the "no GPL/LGPL libraries" rule; Apache-2.0 matches the dependencies.
    - Replace the placeholder `de.example` prefix in `applicationId` and the package name before the first public release. Changing it later breaks updates for installed apps.
