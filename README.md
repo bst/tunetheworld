@@ -24,14 +24,14 @@ Version 1 is feature-complete and has been checked on the emulator and on a real
 | --- | --- |
 | Note mapping, note names | Done, unit tested |
 | YIN pitch detector, RMS, median smoothing with octave-jump guard | Done, unit tested |
-| Pitch pipeline, checked against 42 real recordings of 12 instruments | Done, unit tested |
+| Pitch pipeline, checked against 175 real recordings of 25 instruments | Done, unit tested |
 | Audio input (`AudioRecord`) and tuner engine | Done |
 | Settings (DataStore) | Done, unit tested |
 | ViewModel and Compose UI (tuner screen, gauge, level meter, settings sheet, permission screen) | Done |
 | Emulator check (host audio routed through a virtual PipeWire microphone) | Done |
 | Testing on a real device | Done, works as expected |
 
-`./gradlew test` runs 45 unit tests in 10 test classes, and all of them pass. An 11th class, `PlotDataExport`, only exports the data behind the figures in [PITCH_DETECTION.md](PITCH_DETECTION.md) and is skipped unless `PLOT_DATA_DIR` is set (see [docs/plots/README.md](docs/plots/README.md)).
+`./gradlew test` runs 48 unit tests in 10 test classes, and all of them pass. Two more classes only export data and are skipped unless asked for: `PlotDataExport` writes the data behind the figures in [PITCH_DETECTION.md](PITCH_DETECTION.md) (see [docs/plots/README.md](docs/plots/README.md)), and `EvaluationExport` writes every reading for the block-by-block evaluation (see the [research log](docs/research/RESEARCH_LOG.md)).
 
 Known gaps:
 
@@ -48,7 +48,7 @@ flowchart LR
     B["<b>TunerEngine</b><br/>read loop on<br/>Dispatchers.Default"]
     subgraph P["PitchPipeline (window 4096 / hop 1024)"]
         direction TB
-        P1["level gate (gateDb)"] --> P2["YIN (30–4200 Hz)<br/>+ octave check"]
+        P1["level gate (gateDb)"] --> P2["YIN (30–4200 Hz)<br/>+ octave check<br/>+ memory of last block"]
         P2 --> P3["confidence ≥ 0.80"]
         P3 --> P4["median-of-5 + octave guard"]
     end
@@ -64,11 +64,14 @@ flowchart LR
 ```
 
 - **Audio source:** `UNPROCESSED` if the device supports it, otherwise `VOICE_RECOGNITION`. It never uses `MIC`, because that often turns on noise suppression and automatic gain control.
-- **Pitch detection:** YIN in plain Kotlin with no Android dependencies ([YinPitchDetector.kt](app/src/main/java/de/example/tunetheworld/dsp/YinPitchDetector.kt)). It searches 30–4200 Hz. Two additions to plain YIN keep it on the right octave:
+- **Pitch detection:** YIN in plain Kotlin with no Android dependencies ([YinPitchDetector.kt](app/src/main/java/de/example/tunetheworld/dsp/YinPitchDetector.kt)). It searches 30–4200 Hz. Three additions to plain YIN keep it on the right octave:
   - A dip is only accepted if it is within 0.1 of the deepest dip. Otherwise a shallow dip at half the period can win on high notes (clarinet B♭6).
-  - For lags of 100 samples or more (below about 440 Hz), it checks twice the lag. If the raw difference there is less than a fifth, that is taken as the period. This catches low notes whose second harmonic is much louder than the fundamental, which is common on low strings and the saxophone's low register. It is not used for short lags, because there the period falls between whole samples and twice the period can look deeper by chance.
+  - An octave check looks at twice the lag (for lags of 100 samples or more, below about 440 Hz) and three times the lag (for lags of 20 or more). If the dip in the raw difference there is less than a fifth as deep, that multiple is taken as the period. This catches notes whose second or third harmonic is much louder than the fundamental: low strings, the saxophone's low register, the oboe's B♭4.
+  - The detector remembers the previous block. If its dip was cleaner and the raw difference is much smaller near its period, the current block takes that period. This is the YIN paper's step 6, adapted; it repairs octave errors of low strings as their fundamental fades.
 
-  The difference function is computed with an FFT ([DifferenceFunction.kt](app/src/main/java/de/example/tunetheworld/dsp/DifferenceFunction.kt)): expanding the square leaves two energy terms (running sums) and a cross-correlation, which one forward and one inverse FFT of size 4096 give for every lag at once. Everything is in double precision, because near a dip the result is a small difference of large terms. This is about 12× faster than the plain loop it replaced (about 240 µs instead of 2.8 ms per analysis on a desktop JVM). Across all 42 test recordings it gives the same readings within 0.002 cents. `detect()` allocates nothing. The level gate checks both ends of the analysis window, so a note's first blocks are not analysed while the window still holds the silence before it.
+  The [research log](docs/research/RESEARCH_LOG.md) records how these rules and their constants were chosen.
+
+  The difference function is computed with an FFT ([DifferenceFunction.kt](app/src/main/java/de/example/tunetheworld/dsp/DifferenceFunction.kt)): expanding the square leaves two energy terms (running sums) and a cross-correlation, which one forward and one inverse FFT of size 4096 give for every lag at once. Everything is in double precision, because near a dip the result is a small difference of large terms. This is about 12× faster than the plain loop it replaced (about 240 µs instead of 2.8 ms per analysis on a desktop JVM). Across the 42 test recordings of the time it gave the same readings within 0.002 cents. `detect()` allocates nothing. The level gate checks both ends of the analysis window, so a note's first blocks are not analysed while the window still holds the silence before it.
 - **Smoothing:** a median over 5 values. A jump of more than 0.8 semitones is ignored, unless three consecutive values agree on it, in which case it counts as a real note change ([PitchSmoother.kt](app/src/main/java/de/example/tunetheworld/dsp/PitchSmoother.kt)).
 - **Note math:** `m = 69 + 12·log2(f / ref)`. The nearest sounding note is `n = round(m)` and the deviation is `(m − n) · 100` %. The transposition is added after rounding, and the reference pitch always means concert A4 ([NoteMapper.kt](app/src/main/java/de/example/tunetheworld/music/NoteMapper.kt)). All calculation uses the pitch class index (0–11). The name comes from [NoteNames.kt](app/src/main/java/de/example/tunetheworld/music/NoteNames.kt) only at display time, because "B" means different notes in German and English.
 - **More detail:** [PITCH_DETECTION.md](PITCH_DETECTION.md) describes every step, why it is there, and the papers it builds on.
@@ -122,18 +125,19 @@ The app needs the `RECORD_AUDIO` permission. On first launch it explains why and
 The unit tests run on the JVM and need no device:
 
 - `NoteMapperTest`, `NoteNamesTest`, `TranspositionTest`: frequency to note and percent with and without transposition, German/English names, the key and the sounding note of a written C.
-- `YinPitchDetectorTest`: pure sines from 31 Hz to 4186 Hz (all within 1 cent), sax-like and low-string tones with a weak fundamental that must not be detected an octave high, noise, silence, and a runtime budget.
+- `YinPitchDetectorTest`: pure sines from 31 Hz to 4186 Hz (all within 1 cent), sax-like and low-string tones with a weak fundamental that must not be detected an octave high, a tone with a dominant third harmonic, the memory of the previous block (repairs a fading fundamental, does not hold back a real note change, forgets on reset), noise, silence, and a runtime budget.
 - `DifferenceFunctionTest`: the FFT difference function matches the plain definition (computed in double precision) on noise and harmonic tones, keeps exact zeros at the period of a perfectly periodic tone, and gives zero for silence.
 - `PitchSmootherTest`, `SignalUtilsTest`, `PitchPipelineTest`: smoothing, octave guard, RMS and dB conversion, and gate behaviour.
 - `SettingsRepositoryTest`: defaults, clamping, migration of the version 1 modes, and fallback for unknown stored values.
-- `SampleValidationTest`: runs 42 recordings from the [University of Iowa Musical Instrument Samples](https://theremin.music.uiowa.edu/MIS.html) through the full pipeline. There are usually three notes per instrument (low, middle, high), from double bass C1 (32.7 Hz) to violin E7 (2637 Hz). The instruments are alto sax, double bass, cello, violin, flute, B♭ clarinet, trumpet, horn, tenor trombone, tuba, bassoon and oboe, bowed and plucked strings included. Each recording is checked in concert pitch and in its instrument's usual transposition. The test splits every note into three phases:
+- `SampleValidationTest`: runs 175 recordings from the [University of Iowa Musical Instrument Samples](https://theremin.music.uiowa.edu/MIS.html) through the full pipeline. They cover all 25 instruments of the collection with their lowest, highest and two middle notes at ff, plus the lowest and highest at pp. The instruments range from double bass C1 (32.7 Hz) to glockenspiel and crotales near C8: saxophones, clarinets, flutes, oboe, bassoon, brass, bowed and plucked strings, piano, and mallet percussion. Each recording is checked in concert pitch and in its instrument's usual transposition, against its player's reference pitch (the named note shifted by the median of the settled readings within ±100 cents of it). The test splits every note into three phases:
   - **Attack:** the first 300 ms. Only the onset time is checked, because the sound itself is still settling: overblown flute notes speak in the octave below for a moment, and low brass slides into the pitch.
-  - **Settled part:** judged strictly. It must show the right note and octave in at least 95 % of blocks, have no octave errors, stay within ±50 cents in the median, and change by at most 3 cents per block in the median.
+  - **Settled part:** judged strictly. It must show the right note and octave in at least 95 % of blocks, have no octave errors, and change by at most 3 cents per block in the median. Struck and plucked notes that die away before they settle are only checked for wrong readings, and notes shorter than about 230 ms of full windows are only reported.
   - **Release:** the note has fallen more than 12 dB below its peak (20 dB for plucked notes). Low strings lose their fundamental as they die away, so readings an octave up are tolerated there and listed in the report.
 
-  The test prints a measurement table for each file. The alto sax D3 recording really does jump up an octave briefly (confirmed by ear), so the test allows that one short stretch.
+  The test prints a measurement table for each file. The alto sax D3 recording really does jump up an octave briefly (confirmed by ear), so the test allows that one short stretch. Eight recordings that the detector still gets wrong are marked `known-failure`: they are run and reported, but do not fail the test (see [PITCH_DETECTION.md](PITCH_DETECTION.md#remaining-weak-spots)).
+- `EvaluationExport` (skipped unless `EVAL_OUT` is set) writes the reading of every analysis block of every recording, for comparing detector versions block by block with [docs/research/evaluate.py](docs/research/evaluate.py).
 
-The recordings are not part of the repository. Their site says they "may be downloaded and used for any projects, without restrictions". They are listed with their SHA-256 hashes in [app/src/test/resources/samples.tsv](app/src/test/resources/samples.tsv), which both the test and the `downloadSamples` task in [app/build.gradle.kts](app/build.gradle.kts) read. To add a recording, add a line there. Before the tests run, the task downloads any missing files (about 32 MB in total), checks their hashes, and stores them in `~/.gradle/caches/tunetheworld-samples/iowa-mis/`. Once they are cached, no network access is needed. The directory is passed to the tests through the `samples.dir` system property. If the download fails, the build fails rather than skipping the test.
+The recordings are not part of the repository. Their site says they "may be downloaded and used for any projects, without restrictions". They are listed with their SHA-256 hashes in [app/src/test/resources/samples.tsv](app/src/test/resources/samples.tsv), which both the test and the `downloadSamples` task in [app/build.gradle.kts](app/build.gradle.kts) read. To add a recording, add a line there. Before the tests run, the task downloads any missing files (about 170 MB in total), checks their hashes, and stores them in `~/.gradle/caches/tunetheworld-samples/iowa-mis/`. Once they are cached, no network access is needed. The directory is passed to the tests through the `samples.dir` system property. If the download fails, the build fails rather than skipping the test.
 
 ## Testing on the emulator
 

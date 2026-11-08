@@ -1,6 +1,6 @@
 # Plan
 
-What comes next for Tune the World. Version 1 is feature-complete and tested on a real device (see [README.md](README.md#status)). It has since been generalized from a saxophone tuner to any instrument: 30–4200 Hz, any transposition from −24 to +26 semitones, checked against 42 recordings of 12 instruments. The next work makes the project ready to publish as open source and keeps it working once other people send changes.
+What comes next for Tune the World. Version 1 is feature-complete and tested on a real device (see [README.md](README.md#status)). It has since been generalized from a saxophone tuner to any instrument: 30–4200 Hz, any transposition from −24 to +26 semitones, checked against 175 recordings of 25 instruments (see the [research log](docs/research/RESEARCH_LOG.md)). The next work makes the project ready to publish as open source and keeps it working once other people send changes.
 
 ## Next steps
 
@@ -31,7 +31,7 @@ Runs the same checks as the git hooks, plus an APK build:
 ```
 
 - [ ] Add `.github/workflows/ci.yml` with `actions/checkout`, `actions/setup-java` (Temurin 21, matching `gradle-daemon-jvm.properties`) and `gradle/actions/setup-gradle` (Gradle caching and wrapper validation).
-- [ ] Cache `~/.gradle/caches/tunetheworld-samples` with `actions/cache`, keyed on the hash of `app/src/test/resources/samples.tsv`. Otherwise every run downloads the recordings (about 32 MB) from the University of Iowa server and fails when it is down.
+- [ ] Cache `~/.gradle/caches/tunetheworld-samples` with `actions/cache`, keyed on the hash of `app/src/test/resources/samples.tsv`. Otherwise every run downloads the recordings (about 170 MB) from the University of Iowa server and fails when it is down.
 - [ ] Upload `app/build/reports` as a build artifact when the job fails, so lint and test reports can be read.
 - [ ] If the runner image lacks API 37 and AGP does not download it, add an `sdkmanager "platforms;android-37"` step.
 

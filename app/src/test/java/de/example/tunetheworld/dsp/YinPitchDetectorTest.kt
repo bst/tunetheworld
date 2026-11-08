@@ -72,6 +72,45 @@ class YinPitchDetectorTest {
     }
 
     @Test
+    fun dominantThirdHarmonicIsNotATwelfthHigh() {
+        // Like the oboe's B♭4 in the test recordings: the 3rd harmonic is about 20 dB above the fundamental
+        val r = detector().detect(tone(466.16, floatArrayOf(0.1f, 0.15f, 1.0f, 0.1f)))
+        assertNotNull(r)
+        assertTrue("got ${r!!.frequencyHz} Hz", abs(cents(r.frequencyHz, 466.16)) < 2.0)
+    }
+
+    @Test
+    fun fadingFundamentalKeepsTheOctaveOfThePreviousBlock() {
+        // A low string dying away: in the second block the fundamental is almost gone and only even harmonics are left,
+        // so the half period is a near-perfect match that the octave check cannot reject
+        val strong = tone(65.41, floatArrayOf(1.0f, 1.0f, 0.5f, 0.5f))
+        val faded = tone(65.41, floatArrayOf(0.01f, 1.0f, 0.0f, 0.5f))
+        val alone = detector().detect(faded)
+        assertNotNull(alone)
+        assertTrue("without memory: ${alone!!.frequencyHz} Hz", abs(cents(alone.frequencyHz, 130.81)) < 5.0)
+
+        val d = detector()
+        d.detect(strong)
+        val r = d.detect(faded)
+        assertNotNull(r)
+        assertTrue("with memory: ${r!!.frequencyHz} Hz", abs(cents(r.frequencyHz, 65.41)) < 2.0)
+
+        d.reset()
+        val afterReset = d.detect(faded)
+        assertTrue("after reset: ${afterReset!!.frequencyHz} Hz", abs(cents(afterReset.frequencyHz, 130.81)) < 5.0)
+    }
+
+    @Test
+    fun noteChangeAnOctaveUpIsNotHeldBack() {
+        // The memory must not keep the old period: the new note also repeats after it, but no better than at its own
+        val d = detector()
+        d.detect(tone(65.41, floatArrayOf(1.0f, 0.5f, 0.3f)))
+        val r = d.detect(tone(130.81, floatArrayOf(1.0f, 0.5f, 0.3f)))
+        assertNotNull(r)
+        assertTrue("got ${r!!.frequencyHz} Hz", abs(cents(r.frequencyHz, 130.81)) < 2.0)
+    }
+
+    @Test
     fun sineWithNoise() {
         val rnd = Random(42)
         val buf = tone(440.0, floatArrayOf(0.5f))

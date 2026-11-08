@@ -98,7 +98,8 @@ def functions(data: Path, out: Path):
     a = ax[2]
     a.plot(tau, c, color=BLUE, lw=1.1)
     a.axhline(num(meta, "threshold"), color=RED, lw=0.9)
-    a.text(tau.max() - 5, 0.17, "threshold 0.15", ha="right", va="bottom", color=RED, fontsize=9)
+    a.text(tau.max() - 5, num(meta, "threshold") + 0.02, f"threshold {num(meta, 'threshold'):.2f}", ha="right",
+           va="bottom", color=RED, fontsize=9)
     a.axhline(1.0, color=GREY, lw=0.6, ls=":")
     for k in (1, 2, 3):
         a.axvline(k * period, color=ORANGE, lw=0.8, ls="--")
@@ -107,7 +108,7 @@ def functions(data: Path, out: Path):
                f"{num(meta, 'frequency_hz'):.2f} Hz",
                xy=(period, 0.02), xytext=(period + 110, 2.6), fontsize=9,
                arrowprops=dict(arrowstyle="->", color="black", lw=0.8))
-    a.annotate(f"T/2: only even partials line up,\nd′ ≈ {c[half]:.2f}, well above 0.15",
+    a.annotate(f"T/2: only even partials line up,\nd′ ≈ {c[half]:.2f}, well above {num(meta, 'threshold'):.2f}",
                xy=(period / 2, c[half] + 0.03), xytext=(20, 3.05), fontsize=9, color=GREY,
                arrowprops=dict(arrowstyle="->", color=GREY, lw=0.8))
     a.set_xlim(0, tau.max())
@@ -134,12 +135,12 @@ def dip_choice(data: Path, out: Path):
     a.text(tau_min / 2, 0.75, "not\nsearched", ha="center", va="center", fontsize=8.5, color=GREY,
            bbox=dict(fc="white", ec="none", alpha=0.8, pad=1))
     a.plot(tau, c, color=BLUE, lw=1.0, marker="o", ms=2.5)
-    a.axhline(num(meta, "threshold"), color=RED, lw=0.9, label="threshold 0.15")
+    a.axhline(num(meta, "threshold"), color=RED, lw=0.9, label=f"threshold {num(meta, 'threshold'):.2f}")
     a.axhline(num(meta, "accept"), color=PURPLE, lw=0.9, ls="--",
               label=f"deepest dip + 0.1 = {num(meta, 'accept'):.3f}")
     a.legend(loc="upper right", frameon=False, fontsize=9)
     a.plot([plain], [c[plain]], "x", color=RED, ms=8, mew=1.8)
-    a.annotate(f"plain YIN: first dip below 0.15 (d′ = {c[plain]:.2f})\nτ = {plain} → {SR / plain:.0f} Hz, "
+    a.annotate(f"plain YIN: first dip below {num(meta, 'threshold'):.2f} (d′ = {c[plain]:.2f})\nτ = {plain} → {SR / plain:.0f} Hz, "
                "an octave too high",
                xy=(plain, c[plain]), xytext=(13, 3.75), va="top", fontsize=9, color=RED,
                arrowprops=dict(arrowstyle="->", color=RED, lw=0.8))
@@ -162,9 +163,9 @@ def dip_choice(data: Path, out: Path):
     a = ax[1]
     a.plot(tau, c, color=BLUE, lw=1.0)
     a.axhline(num(meta, "threshold"), color=RED, lw=0.9)
-    a.text(695, 0.17, "threshold 0.15", ha="right", va="bottom", color=RED, fontsize=9)
+    a.text(695, num(meta, "threshold") + 0.02, f"threshold {num(meta, 'threshold'):.2f}", ha="right", va="bottom", color=RED, fontsize=9)
     a.plot([first], [c[first]], "x", color=RED, ms=8, mew=1.8)
-    a.annotate(f"first dip below 0.15: τ = {first} (d′ = {c[first]:.3f})\nalone this gives about "
+    a.annotate(f"first dip below {num(meta, 'threshold'):.2f}: τ = {first} (d′ = {c[first]:.3f})\nalone this gives about "
                f"{SR / first:.0f} Hz, an octave too high",
                xy=(first, c[first]), xytext=(165, 3.15), va="top", fontsize=9, color=RED,
                arrowprops=dict(arrowstyle="->", color=RED, lw=0.8))

@@ -8,7 +8,8 @@ import kotlin.math.floor
 
 /**
  * Repeats the steps of [YinPitchDetector] and keeps every intermediate value, for the plots in PITCH_DETECTION.md.
- * [checkAgainstDetector] makes sure the copy still matches the real detector.
+ * [checkAgainstDetector] makes sure the copy still matches the real detector. Like a fresh detector, it has no
+ * previous block, so step 6 never applies.
  */
 class YinTrace(val buffer: FloatArray) {
     val sampleRate = TunerConfig.SAMPLE_RATE
@@ -40,13 +41,9 @@ class YinTrace(val buffer: FloatArray) {
     /** First dip below [accept], also close to the deepest dip. */
     val nearDeepestLag = firstDipBelow(accept)
 
-    /** Step 3b: the lag checked at twice [nearDeepestLag], or -1 if the check does not apply. */
-    val octaveCandidate = if (nearDeepestLag >= OCTAVE_MIN_LAG && cmnd[nearDeepestLag] > OCTAVE_MIN_DIP) {
-        deepestNear(2 * nearDeepestLag)
-    } else {
-        -1
-    }
-    val octaveApplied = octaveCandidate != -1 && diff[octaveCandidate] < OCTAVE_RATIO * diff[nearDeepestLag]
+    /** Step 3b: the multiple of [nearDeepestLag] the octave check moved to, or -1 if it kept the lag. */
+    val octaveCandidate = octaveCheck(nearDeepestLag)
+    val octaveApplied = octaveCandidate != -1
     val finalLag = if (octaveApplied) octaveCandidate else nearDeepestLag
 
     /** Step 4: the parabola a·(τ − finalLag)² + b·(τ − finalLag) + c through raw d at the dip and its neighbours. */
@@ -97,6 +94,26 @@ class YinTrace(val buffer: FloatArray) {
         return -1
     }
 
+    private fun octaveCheck(found: Int): Int {
+        if (found < TRIPLE_MIN_LAG || cmnd[found] <= OCTAVE_MIN_DIP) return -1
+        val base = dipDepth(found)
+        for (k in 2..3) {
+            if (found < (if (k == 2) DOUBLE_MIN_LAG else TRIPLE_MIN_LAG)) continue
+            val multiple = deepestNear(k * found)
+            if (multiple == -1) return -1
+            if (dipDepth(multiple) < OCTAVE_RATIO * base) return multiple
+        }
+        return -1
+    }
+
+    private fun dipDepth(t: Int): Float {
+        val a = diff[t - 1]
+        val b = diff[t]
+        val c = diff[t + 1]
+        val den = a - 2f * b + c
+        return if (den <= 0f) b else maxOf(0f, b - (a - c) * (a - c) / (8f * den))
+    }
+
     private fun deepestNear(center: Int): Int {
         if (center + 2 > tauMax) return -1
         var best = center - 2
@@ -107,8 +124,9 @@ class YinTrace(val buffer: FloatArray) {
     private companion object {
         // Copies of the private constants in YinPitchDetector; checkAgainstDetector catches a mismatch
         const val NEAR_DEEPEST = 0.1f
-        const val OCTAVE_MIN_LAG = 100
-        const val OCTAVE_MIN_DIP = 0.005f
+        const val OCTAVE_MIN_DIP = 0.02f
+        const val DOUBLE_MIN_LAG = 100
+        const val TRIPLE_MIN_LAG = 20
         const val OCTAVE_RATIO = 0.2f
     }
 }

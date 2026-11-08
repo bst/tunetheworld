@@ -70,39 +70,35 @@ The figure shows both functions for one test signal from [YinPitchDetectorTest](
 
 - **Signal (top):** the period is T = 44100 / 116.54 ≈ 378.4 samples. The first w = 2048 samples (shaded blue) are compared with copies of the signal shifted by τ.
 - **d(τ) (middle):** zero at τ = 0, then nearly zero again at T, 2T and 3T, where the signal lines up with itself. It is not exactly zero there, because the true period falls between two whole samples. Step 4 deals with that. At T/2 only the even partials line up, which gives a partial dip.
-- **d′(τ) (bottom):** starts at 1 by definition. The dip at T/2 stays at about 0.75, far above the threshold. The first dip below 0.15 is at τ = 378, and interpolation refines it to 378.4 samples. The detector reports 116.540 Hz with a confidence of 0.9998. The deeper dips at 2T and 3T are never considered, because the first dip below the threshold wins.
+- **d′(τ) (bottom):** starts at 1 by definition. The dip at T/2 stays at about 0.75, far above the threshold. The first dip below the threshold is at τ = 378, and interpolation refines it to 378.4 samples. The detector reports 116.540 Hz with a confidence of 0.9998. The deeper dips at 2T and 3T are never considered, because the first dip below the threshold wins.
 
 ### Step 3: choosing the dip
 
-YIN's absolute threshold (step 4 of the paper) takes the first lag where d′ drops below a threshold, here 0.15, and then walks down to the bottom of that dip. The paper calls the error this prevents a subharmonic or "octave" error: a dip at two or three times the period can be deeper than the one at the period itself, and picking it reads an octave or a twelfth too low. Taking the first dip below the threshold, rather than the deepest one, avoids this. The paper uses a threshold of 0.1 and found that the exact value hardly matters (its Fig. 4b).
+YIN's absolute threshold (step 4 of the paper) takes the first lag where d′ drops below a threshold, here 0.20, and then walks down to the bottom of that dip. The paper calls the error this prevents a subharmonic or "octave" error: a dip at two or three times the period can be deeper than the one at the period itself, and picking it reads an octave or a twelfth too low. Taking the first dip below the threshold, rather than the deepest one, avoids this. The paper uses a threshold of 0.1 and found that the exact value hardly matters (its Fig. 4b). On the test recordings, 0.20 gave a few more correct readings than 0.15 or 0.1, and it matches the confidence filter, which drops anything with d′ above 0.20 anyway ([research log](docs/research/RESEARCH_LOG.md), experiment 2).
 
-**Near-deepest rule.** Plain YIN can go wrong the other way on high notes. For the clarinet's B♭6 in the test recordings, d′ is 0.14 at half the period, just under the threshold, and 0.01 at the true period. Plain YIN would read an octave too high. So a dip is only accepted if it is also within 0.1 of the deepest dip in the search range:
+**Near-deepest rule.** Plain YIN can go wrong the other way on high notes. For the clarinet's B♭6 in the test recordings, d′ is 0.13 at half the period, under the threshold, and 0.01 at the true period. Plain YIN would read an octave too high. So a dip is only accepted if it is also within 0.1 of the deepest dip in the search range:
 
 ```
-accept = min(0.15, deepest + 0.1)
+accept = min(0.20, deepest + 0.1)
 ```
 
 The idea comes from the McLeod Pitch Method [2], which accepts the first peak of its normalized function that reaches a fixed fraction of the highest peak. Here it is applied to YIN's d′ as an additive margin.
 
 Unlike the paper, which falls back to the global minimum when nothing is below the threshold, the detector reports no pitch in that case. A tuner showing nothing is better than one showing a guess.
 
-### Step 3b: octave check for low notes
+### Step 3b: octave check
 
-On low notes the fundamental is often much weaker than the second harmonic: low strings, the saxophone's low register, and notes dying away. The signal then nearly repeats after half the period, d′ dips below the threshold there first, and the reading is an octave too high.
+On low notes the fundamental is often much weaker than the second harmonic: low strings, the saxophone's low register, and notes dying away. The signal then nearly repeats after half the period, d′ dips below the threshold there first, and the reading is an octave too high. The oboe's B♭4 in the test set shows the same with the third harmonic, which is 21 dB above the fundamental: YIN finds a third of the period and reads an octave and a fifth too high.
 
-The check: if the chosen lag is 100 samples or more (below about 440 Hz) and its d′ is above 0.005, look at twice the lag (the smallest raw d within ±2 samples of it). If the raw difference there is less than a fifth of the raw difference at the chosen lag, twice the lag is taken as the period.
+The check: if the chosen dip's d′ is above 0.02, look at twice the lag and then three times the lag (the smallest raw d within ±2 samples of each). If the dip in the raw difference there is less than a fifth as deep as at the chosen lag, that multiple is taken as the period. Twice the lag is only checked for lags of 100 samples or more (below about 440 Hz), three times the lag for lags of 20 or more.
 
 The conditions come from testing against the recordings:
 
 - **Raw d, not d′.** d′ divides by the running mean, which grows with τ, so it favours longer lags. Comparing d′ values pushed clean high notes down an octave.
-- **Only for lags of 100 or more.** At short lags the true period usually falls between whole samples. Twice the period can then land almost exactly on a whole sample and look deeper by chance. The violin's E7 has a period of 16.7 samples: lag 16 gives a shallow dip and lag 33 a deep one, although 16.7 is correct.
-- **Only when the first dip is above 0.005.** On a clean tone both dips are close to zero, and their ratio is just noise.
+- **Interpolated depths.** At short lags the true period usually falls between whole samples, and a multiple can land almost exactly on a whole sample and look deeper by chance. The violin's E7 has a period of 16.7 samples: lag 16 gives a shallow dip and lag 33 a deep one, although 16.7 is correct. So the depth of each dip is taken from a parabola through it and its neighbours, as in step 4. For three times the lag that makes the check safe down to lag 20. Twice the lag still gives false octaves at short lags on the clarinet B♭6 and the vibrato flutes, so it keeps its limit of 100.
+- **Only when the first dip is above 0.02.** On a clean tone all dips are close to zero, and their ratio is just noise. With a limit of 0.005, the check moved correct readings an octave down in single blocks of violin, oboe, trumpet and trombone recordings. Raising the limit alone lets real octave errors of low strings through, which also have first dips below 0.05. Together with step 6 below, which repairs those, 0.02 works best.
 
-This check is our own heuristic, not taken from a paper. With it, all test recordings pass.
-
-It is not perfect. In 8 single analysis blocks of 4 recordings (violin A4, oboe A4, trumpet E3, trombone E2), it moves a correct reading an octave down. In those blocks the first dip is only just above the 0.005 limit (at most 0.012), while the real octave errors it fixes start at 0.045. Raising the limit to about 0.03 would probably separate the two groups, but that has not been tried yet. The wrong blocks never reach the display: none of them come three in a row, so the smoother's jump guard ([section 6](#6-smoothing)) holds them back.
-
-One known limit remains: as the cello's C2 fades out, its fundamental almost disappears, and the end of the note still reads an octave up. The tests tolerate that in the fade-out only.
+This check is our own heuristic, not taken from a paper. The three-times rule was added for a single recording (the oboe B♭4), and the other 174 confirm that it does no harm ([research log](docs/research/RESEARCH_LOG.md), experiments 1 and 8).
 
 ![d′(τ) of a clarinet B♭6 with plain YIN's wrong pick and the chosen dip; d′(τ) and raw d(τ) of an alto sax D3 with the octave check](docs/images/yin-dip-choice.svg)
 
@@ -110,7 +106,19 @@ The figure shows both rules on real recordings from the test set. Each panel sho
 
 - **Clarinet B♭6 (top).** At half the period (τ = 12), d′ is 0.13, just under the threshold. Plain YIN stops there and reads about 3675 Hz, an octave too high. The deepest dip is 0.0015, so only dips below 0.101 are accepted. The first such dip is at τ = 24, which interpolation refines to 23.72 samples: 1859 Hz.
 - **Alto sax D3 (middle).** The second harmonic is stronger than the fundamental. d′ first drops below the threshold at τ = 151, half the period, with d′ = 0.05. That passes the near-deepest rule too, so on its own the detector would read about 292 Hz. d′ is even deeper at τ = 302, but YIN takes the first dip.
-- **Alto sax D3, raw d on a log scale (bottom).** The octave check applies because the lag is 151 (at least 100) and d′ = 0.05 (above 0.005). d(302) is 4.6 % of d(151), well below the 20 % limit, so 302 is taken as the period: 146.26 Hz. The expected pitch is 146.83 Hz. On a log scale the 20 % limit is a fixed distance below d(151), drawn as the dashed line.
+- **Alto sax D3, raw d on a log scale (bottom).** The octave check applies because the lag is 151 (at least 100) and d′ = 0.05 (above 0.02). d(302) is 4.6 % of d(151), well below the 20 % limit, so 302 is taken as the period: 146.26 Hz. The expected pitch is 146.83 Hz. On a log scale the 20 % limit is a fixed distance below d(151), drawn as the dashed line. The figure shows the sampled values; the check compares interpolated depths, which here differ by less than the line width.
+
+### Step 3c: memory of the previous block
+
+The paper's step 6, "best local estimate" [1, section II F], uses the fact that an estimate that fails at one moment is often right a moment later. For each analysis point it looks at the estimates of nearby points (within half the longest period), takes the one with the smallest d′, and runs the search again within ±20 % of its period. The paper chooses by quality (d′), not by continuity.
+
+Here the analysis points are 1024 samples apart, more than half the longest period (735 samples), so the previous block serves as the neighbourhood. If its dip was cleaner (lower d′) than the current one, the current block is searched again within ±20 % of the previous period. This repairs most of the remaining octave-up errors of low strings as their fundamental fades; on the bowed cello C2 alone it fixes 56 blocks.
+
+Applied as in the paper, it also carries errors forward. A tone that repeats after T also repeats after 2T, so an octave-low reading, for instance from a note's attack, fits every following block just as well. The guard that separates the two cases is the raw difference. At the true period of a low string with a weak fundamental, d is much smaller than at half the period, while a clean tone gives about the same d at T and at 2T. So the detector only moves to the previous period if raw d there is less than 0.3 times raw d at its own choice. This makes the detector stateful, so it forgets the previous block whenever the level gate closes, for example between two notes ([research log](docs/research/RESEARCH_LOG.md), experiment 5).
+
+### Remaining weak spots
+
+As low strings die away, their fundamental almost disappears, and some readings in the fade-out still come out an octave up; the tests tolerate that in the release only. The plucked cello C2 and double bass C1 still read an octave up for much of the note. The crotales (inharmonic bells), the bass trombone's lowest notes (few confident readings below about 60 Hz) and the piano's B0 are also beyond the detector so far. These recordings are marked `known-failure` in the test set.
 
 ### Step 4: parabolic interpolation
 
@@ -159,11 +167,11 @@ The figure shows the error for pure sines at 400 frequencies from 30 Hz to 4186 
 - **Parabola on raw d (blue), what the detector does:** at most 0.02 cents below 1 kHz and 0.9 cents at the top, with no systematic offset. For the 2637 Hz sine it gives 2636.66 Hz, 0.24 cents flat.
 - **Parabola on d′ (grey), the earlier version:** sharp at every frequency, by 1.8 cents on average above 1 kHz and up to 7 cents above 3.6 kHz.
 
-The paper's step 6, "best local estimate", is not used [1, section II F]. For each analysis point, it looks at the estimates of nearby analysis points (within half the longest period), takes the one with the smallest d′, and runs the search again within ±20 % of it. Here the median smoothing and jump guard in [section 6](#6-smoothing) take its place. The paper deliberately avoided median smoothing so as to evaluate the method on its own (section VIII), and it points out the difference: step 6 chooses by quality (d′), not by continuity.
+The paper's step 6 runs here in an adapted form before the interpolation (step 3c). On top of it, the median smoothing and jump guard in [section 6](#6-smoothing) hold back single outliers. The paper deliberately avoided median smoothing, to evaluate the method on its own (section VIII).
 
 ### Confidence
 
-The confidence is 1 − d′ at the chosen lag, clamped to 0–1. The paper shows that d′ at the period is proportional to the ratio of aperiodic to total power, and suggests using it as a confidence indicator [1, sections II D and V]. Readings below 0.80 are dropped. Because the threshold is 0.15, this mostly filters out cases where the octave check moved to twice the lag and the dip there is less clean.
+The confidence is 1 − d′ at the chosen lag, clamped to 0–1. The paper shows that d′ at the period is proportional to the ratio of aperiodic to total power, and suggests using it as a confidence indicator [1, sections II D and V]. Readings below 0.80 are dropped. With the threshold at 0.20 this matches step 3 exactly; the filter still matters where the octave check or step 3c moved to a dip that is less clean.
 
 ### Differences from the paper
 
@@ -174,11 +182,11 @@ The paper was written and evaluated for speech, at 16 and 20 kHz. This detector 
 | Search range | 40 Hz to a quarter of the sample rate | 30–4200 Hz |
 | Window | 25 ms, a new estimate every sample | w = 2048 samples (46 ms), a new estimate every 1024 samples |
 | Low-pass prefilter | 1 ms moving average (zero at 1 kHz) in the evaluation | none; it would weaken high notes |
-| Threshold (step 4) | 0.1 | 0.15 |
+| Threshold (step 4) | 0.1 | 0.20 |
 | No dip below the threshold | take the global minimum | report no pitch |
-| Extra dip rules | none | near-deepest rule, octave check (step 3, 3b) |
-| Interpolation (step 5) | depth of every dip interpolated before choosing; period taken from raw d | only the chosen dip is interpolated; period taken from raw d, as in the paper |
-| Step 6, best local estimate | yes | no; median smoothing with a jump guard instead |
+| Extra dip rules | none | near-deepest rule, octave check at 2× and 3× the lag (step 3, 3b) |
+| Interpolation (step 5) | depth of every dip interpolated before choosing; period taken from raw d | period taken from raw d, as in the paper; interpolated depths only in the octave check (choosing by them made no difference) |
+| Step 6, best local estimate | neighbouring estimates within half the longest period | the previous block, with a raw-d guard (step 3c); median smoothing with a jump guard on top |
 | Difference function | direct sum, or a recursion over time | FFT, exact for every lag |
 
 ## 4. The difference function by FFT
@@ -209,7 +217,7 @@ Implementation details in [DifferenceFunction.kt](app/src/main/java/de/example/t
 - **Double precision.** Near a dip, d(τ) is a small difference of large terms, so float rounding would eat the information that matters. Values that come out slightly negative from rounding (silence, a perfectly periodic tone) are clamped to 0.
 - **Radix-2, iterative, in place**, with precomputed twiddle factors and bit-reversal table. Nothing is allocated per call.
 
-On a desktop JVM this takes about 240 µs per analysis instead of about 2.8 ms for the direct loop, roughly 12× faster. Across all 42 test recordings (5940 analysis blocks), the FFT version gives the same readings as the direct loop to within 0.002 cents, and no block changes between "note" and "no note". [DifferenceFunctionTest](app/src/test/java/de/example/tunetheworld/dsp/DifferenceFunctionTest.kt) compares it with the textbook definition, computed in double precision, on noise and harmonic tones from 32.7 Hz to 2637 Hz.
+On a desktop JVM this takes about 240 µs per analysis instead of about 2.8 ms for the direct loop, roughly 12× faster. Across the 42 test recordings of the time (5940 analysis blocks), the FFT version gives the same readings as the direct loop to within 0.002 cents, and no block changes between "note" and "no note". [DifferenceFunctionTest](app/src/test/java/de/example/tunetheworld/dsp/DifferenceFunctionTest.kt) compares it with the textbook definition, computed in double precision, on noise and harmonic tones from 32.7 Hz to 2637 Hz.
 
 ## 5. Precision and latency
 
@@ -244,8 +252,9 @@ This is twelve-tone equal temperament, the same mapping MIDI uses. The transposi
 
 ## 8. Testing
 
-- **Unit tests** check each stage on synthetic signals: sines across the range, harmonic tones with a weak fundamental, noise, silence, and the FFT against the direct definition.
-- **Real recordings:** [SampleValidationTest](app/src/test/java/de/example/tunetheworld/sample/SampleValidationTest.kt) runs the complete pipeline on 42 recordings of 12 instruments from the University of Iowa Musical Instrument Samples [6]. They range from double bass to piccolo and include vibrato and plucked notes. Each note is split into attack, settled part and release, and the settled part is judged strictly: the right note in at least 95 % of blocks, median deviation within 50 cents, median jitter at most 3 cents. The recordings are downloaded on demand and checked against SHA-256 hashes listed in [samples.tsv](app/src/test/resources/samples.tsv); the README explains the license.
+- **Unit tests** check each stage on synthetic signals: sines across the range, harmonic tones with a weak fundamental or a dominant third harmonic, the memory of step 3c, noise, silence, and the FFT against the direct definition.
+- **Real recordings:** [SampleValidationTest](app/src/test/java/de/example/tunetheworld/sample/SampleValidationTest.kt) runs the complete pipeline on 175 recordings from the University of Iowa Musical Instrument Samples [6]. They cover every instrument of the collection, 25 in all, from double bass and tuba to glockenspiel, crotales and piano, with their lowest, highest and two middle notes. They include vibrato, quiet notes, and plucked and struck notes. Each note is split into attack, settled part and release. Each recording is judged against its player's reference pitch, because some players are 50–80 cents out of tune. The settled part is judged strictly: the right note in at least 95 % of blocks, and a median jitter of at most 3 cents. The 8 recordings marked `known-failure` are run and reported but do not fail the test. The recordings are downloaded on demand and checked against SHA-256 hashes listed in [samples.tsv](app/src/test/resources/samples.tsv); the README explains the license.
+- **Block-by-block evaluation:** [EvaluationExport](app/src/test/java/de/example/tunetheworld/sample/EvaluationExport.kt) and [evaluate.py](docs/research/evaluate.py) classify every analysis block of every recording and compare two detector versions block by block. The [research log](docs/research/RESEARCH_LOG.md) uses them to test the ideas from the YIN paper and records what was accepted or rejected.
 
 ## References
 

@@ -21,17 +21,12 @@ class DifferenceFunction(private val w: Int, private val maxLag: Int) {
     private val corrRe = DoubleArray(n)
     private val corrIm = DoubleArray(n)
     private val energy = DoubleArray(inputSize + 1) // energy[i] = Σ x[j]² for j < i
-    private val prefix = DoubleArray(inputSize + 1) // prefix[i] = Σ x[j] for j < i
-    var dcModel = false // experiment: allow a constant offset between the signal and its shifted copy (paper Eq. 13)
     private val cos = DoubleArray(n / 2) { Math.cos(2.0 * Math.PI * it / n) }
     private val sin = DoubleArray(n / 2) { Math.sin(2.0 * Math.PI * it / n) }
     private val bitReversed = IntArray(n) { Integer.reverse(it) ushr (Integer.numberOfLeadingZeros(n) + 1) }
 
-    /**
-     * Writes d(τ) for τ = 0..maxLag into [out]. With [amplitudeModel], writes the variant of the YIN paper's Eq. (12)
-     * instead, which allows the amplitude to change by a constant factor per period (experiment).
-     */
-    fun compute(buffer: FloatArray, out: FloatArray, amplitudeModel: Boolean = false) {
+    /** Writes d(τ) for τ = 0..maxLag into [out]. */
+    fun compute(buffer: FloatArray, out: FloatArray) {
         require(buffer.size >= inputSize && out.size > maxLag)
 
         // Both real signals in one complex FFT: a = first w samples as real part, b = all samples as imaginary part
@@ -60,24 +55,10 @@ class DifferenceFunction(private val w: Int, private val maxLag: Int) {
         for (i in 0 until inputSize) {
             val x = buffer[i].toDouble()
             energy[i + 1] = energy[i] + x * x
-            prefix[i + 1] = prefix[i] + x
         }
         val head = energy[w]
         for (tau in 0..maxLag) {
-            val shifted = energy[tau + w] - energy[tau]
-            val r = corrRe[tau] / n
-            var d = if (!amplitudeModel) {
-                head + shifted - 2.0 * r
-            } else if (shifted > 0.0 && r > 0.0) {
-                // Eq. (12): r(0)·(1 − r(τ)² / (r(0)·r_τ(0))); only positive correlation counts as a match
-                head - r * r / shifted
-            } else {
-                head
-            }
-            if (dcModel) {
-                val offset = prefix[w] - (prefix[tau + w] - prefix[tau])
-                d -= offset * offset / w
-            }
+            val d = head + (energy[tau + w] - energy[tau]) - 2.0 * corrRe[tau] / n
             // Rounding can leave a tiny negative value where the exact result is 0 (silence, a perfectly periodic tone)
             out[tau] = if (d > 0.0) d.toFloat() else 0f
         }

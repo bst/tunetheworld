@@ -56,7 +56,7 @@ The release phase has 154 octave-up blocks, mostly low strings losing their fund
 
 ## Experiments
 
-The experiments ran in this order. Each one is compared with the baseline that was current at the time: the original baseline up to experiment 5, then the accepted combination `base2`. "Raw" and "shown" give the blocks that got better and worse in the settled part, then in the release, as `+better/−worse`. The code with all experiment switches is in commit `RESEARCH_COMMIT` (`YinOptions`, `EVAL_VARIANT`), so every run can be repeated there.
+The experiments ran in this order. Each one is compared with the baseline that was current at the time: the original baseline up to experiment 5, then the accepted combination `base2`. "Raw" and "shown" give the blocks that got better and worse in the settled part, then in the release, as `+better/−worse`. The code with all experiment switches is in commit `fec3db7` (`YinOptions` in YinPitchDetector.kt, `EVAL_VARIANT` in EvaluationExport), so every run can be repeated there. The next commit removed the switches and kept only the accepted behaviour; its readings are byte-identical to the snapshot's.
 
 ### 1. Lower limit of the octave check (`OCTAVE_MIN_DIP`): rejected alone, accepted at 0.02 together with experiment 5
 
