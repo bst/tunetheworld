@@ -31,7 +31,7 @@ Version 1 is feature-complete and has been checked on the emulator and on a real
 | Emulator check (host audio routed through a virtual PipeWire microphone) | Done |
 | Testing on a real device | Done, works as expected |
 
-`./gradlew test` runs 45 unit tests in 10 test classes, and all of them pass.
+`./gradlew test` runs 45 unit tests in 10 test classes, and all of them pass. An 11th class, `PlotDataExport`, only exports the data behind the figures in [PITCH_DETECTION.md](PITCH_DETECTION.md) and is skipped unless `PLOT_DATA_DIR` is set (see [docs/plots/README.md](docs/plots/README.md)).
 
 Known gaps:
 

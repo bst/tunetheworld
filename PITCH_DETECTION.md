@@ -1,6 +1,6 @@
 # Pitch detection
 
-This document explains how Tune the World turns microphone samples into a note and a deviation in cents. It says which parts come from published methods, which are this project's own additions, and why each one is there. The short version is in the [README](README.md#how-it-works). All constants live in [TunerConfig.kt](app/src/main/java/de/example/tunetheworld/engine/TunerConfig.kt).
+This document explains how Tune the World turns microphone samples into a note and a deviation in cents. It says which parts come from published methods, which are this project's own additions, and why each one is there. The short version is in the [README](README.md#how-it-works). The figures are drawn from the app's own code; [docs/plots/README.md](docs/plots/README.md) explains how to regenerate them. All constants live in [TunerConfig.kt](app/src/main/java/de/example/tunetheworld/engine/TunerConfig.kt).
 
 The core is the YIN algorithm [1], with the difference function computed by FFT [1, 3, 4], a first-dip rule borrowed from the McLeod Pitch Method [2], an octave check for low notes, and median smoothing [5].
 
@@ -37,7 +37,7 @@ The app records mono float samples at 44.1 kHz. It asks for the `UNPROCESSED` au
 
 Analysis runs on a sliding window of 4096 samples (about 93 ms). Every 1024 new samples (about 23 ms), the window moves on and is analysed again, about 43 times per second.
 
-Why 4096: YIN compares the signal with a copy of itself shifted by up to one period. The integration window is half the buffer, w = 2048 samples. The longest period searched is 1470 samples (30 Hz). Together they need 2048 + 1471 = 3519 samples, so 4096 is the next power of two that fits. A longer window would be steadier but slower to react.
+Why 4096: YIN compares the signal with a copy of itself shifted by up to one period. The integration window is half the buffer, w = 2048 samples. The longest period searched is 1470 samples (30 Hz). Together they need 2048 + 1471 = 3519 samples, so 4096 is the next power of two that fits. This follows the paper's rule that the integration window must be at least as long as the longest period to be detected, so the signal covers about twice that period [1, section IV]. A longer window would be steadier but slower to react.
 
 **Level gate.** Below a configurable level (−40 dBFS by default, adjustable from −60 to −30 dBFS) nothing is analysed. The gate checks the RMS level of both the newest and the oldest 1024 samples in the window. Checking only the newest block is not enough: in the first blocks of a note, the window still contains the silence before it, and YIN reports unreliable pitches for those blocks. This rule is our own addition.
 
@@ -64,9 +64,17 @@ d′(τ) = d(τ) / ((1/τ) · Σ_{j=1}^{τ} d(j))
 
 Raw d(τ) starts at zero for τ = 0 and dips at every multiple of the period, so the smallest value is not a reliable pick. Dividing by the running mean removes the dip at zero and puts all dips on one scale: values near 0 mean "very periodic at this lag", values near 1 mean "no better than average". This is step 3 of the paper.
 
+![The test signal, its difference function d(τ) and the normalized d′(τ)](docs/images/yin-functions.svg)
+
+The figure shows both functions for one test signal from [YinPitchDetectorTest](app/src/test/java/de/example/tunetheworld/dsp/YinPitchDetectorTest.kt) (`saxLikeLowToneIsNotAnOctaveHigh`). It is a low B♭2 at 116.54 Hz whose second partial is louder than the fundamental, as on a real low saxophone note. The values come from the app's own `DifferenceFunction`, run on the full 4096-sample buffer.
+
+- **Signal (top):** the period is T = 44100 / 116.54 ≈ 378.4 samples. The first w = 2048 samples (shaded blue) are compared with copies of the signal shifted by τ.
+- **d(τ) (middle):** zero at τ = 0, then nearly zero again at T, 2T and 3T, where the signal lines up with itself. It is not exactly zero there, because the true period falls between two whole samples. Step 4 deals with that. At T/2 only the even partials line up, which gives a partial dip.
+- **d′(τ) (bottom):** starts at 1 by definition. The dip at T/2 stays at about 0.75, far above the threshold. The first dip below 0.15 is at τ = 378, and interpolation refines it to 378.4 samples. The detector reports 116.540 Hz with a confidence of 0.9998. The deeper dips at 2T and 3T are never considered, because the first dip below the threshold wins.
+
 ### Step 3: choosing the dip
 
-YIN's absolute threshold (step 4 of the paper) takes the first lag where d′ drops below a threshold, here 0.15, and then walks down to the bottom of that dip. Taking the first dip rather than the deepest one prevents the most common error of pitch detectors: picking two or three times the period, which reads an octave or a twelfth too low.
+YIN's absolute threshold (step 4 of the paper) takes the first lag where d′ drops below a threshold, here 0.15, and then walks down to the bottom of that dip. The paper calls the error this prevents a subharmonic or "octave" error: a dip at two or three times the period can be deeper than the one at the period itself, and picking it reads an octave or a twelfth too low. Taking the first dip below the threshold, rather than the deepest one, avoids this. The paper uses a threshold of 0.1 and found that the exact value hardly matters (its Fig. 4b).
 
 **Near-deepest rule.** Plain YIN can go wrong the other way on high notes. For the clarinet's B♭6 in the test recordings, d′ is 0.14 at half the period, just under the threshold, and 0.01 at the true period. Plain YIN would read an octave too high. So a dip is only accepted if it is also within 0.1 of the deepest dip in the search range:
 
@@ -90,22 +98,88 @@ The conditions come from testing against the recordings:
 - **Only for lags of 100 or more.** At short lags the true period usually falls between whole samples. Twice the period can then land almost exactly on a whole sample and look deeper by chance. The violin's E7 has a period of 16.7 samples: lag 16 gives a shallow dip and lag 33 a deep one, although 16.7 is correct.
 - **Only when the first dip is above 0.005.** On a clean tone both dips are close to zero, and their ratio is just noise.
 
-This check is our own heuristic, not taken from a paper. It fixes the octave errors in the test recordings without breaking any of them. One known limit remains: as the cello's C2 fades out, its fundamental almost disappears, and the end of the note still reads an octave up. The tests tolerate that in the fade-out only.
+This check is our own heuristic, not taken from a paper. With it, all test recordings pass.
+
+It is not perfect. In 8 single analysis blocks of 4 recordings (violin A4, oboe A4, trumpet E3, trombone E2), it moves a correct reading an octave down. In those blocks the first dip is only just above the 0.005 limit (at most 0.012), while the real octave errors it fixes start at 0.045. Raising the limit to about 0.03 would probably separate the two groups, but that has not been tried yet. The wrong blocks never reach the display: none of them come three in a row, so the smoother's jump guard ([section 6](#6-smoothing)) holds them back.
+
+One known limit remains: as the cello's C2 fades out, its fundamental almost disappears, and the end of the note still reads an octave up. The tests tolerate that in the fade-out only.
+
+![d′(τ) of a clarinet B♭6 with plain YIN's wrong pick and the chosen dip; d′(τ) and raw d(τ) of an alto sax D3 with the octave check](docs/images/yin-dip-choice.svg)
+
+The figure shows both rules on real recordings from the test set. Each panel shows one 4096-sample analysis window.
+
+- **Clarinet B♭6 (top).** At half the period (τ = 12), d′ is 0.13, just under the threshold. Plain YIN stops there and reads about 3675 Hz, an octave too high. The deepest dip is 0.0015, so only dips below 0.101 are accepted. The first such dip is at τ = 24, which interpolation refines to 23.71 samples: 1860 Hz.
+- **Alto sax D3 (middle).** The second harmonic is stronger than the fundamental. d′ first drops below the threshold at τ = 151, half the period, with d′ = 0.05. That passes the near-deepest rule too, so on its own the detector would read about 292 Hz. d′ is even deeper at τ = 302, but YIN takes the first dip.
+- **Alto sax D3, raw d on a log scale (bottom).** The octave check applies because the lag is 151 (at least 100) and d′ = 0.05 (above 0.005). d(302) is 4.6 % of d(151), well below the 20 % limit, so 302 is taken as the period: 146.26 Hz. The expected pitch is 146.83 Hz. On a log scale the 20 % limit is a fixed distance below d(151), drawn as the dashed line.
 
 ### Step 4: parabolic interpolation
 
-The dip is at a whole-number lag, but the true period usually lies between two samples. At 440 Hz a period is about 100 samples, so one sample is about 17 cents, far too coarse for a tuner. Like step 5 of the paper, the detector fits a parabola through the dip and its two neighbours and takes the parabola's minimum:
+**Why whole samples are not enough.** The difference function only exists at whole-sample lags, and the frequency is f = 44100 / τ. Whole lags can only express a fixed set of frequencies. Two neighbouring lags τ and τ + 1 are 1200 · log2((τ + 1) / τ) ≈ 1731 / τ cents apart, so the gap grows as the period gets shorter:
+
+![Frequencies that whole-sample lags can express, around four notes, on a scale of ±100 cents](docs/images/yin-lag-grid.svg)
+
+Each blue line is a frequency the tuner could show without interpolation; the green band is ±5 cents around the played note.
+
+- **E1 (double bass):** a period of 1070 samples. Neighbouring lags are 1.6 cents apart, almost fine enough on their own.
+- **A4:** neighbouring lags are 17 cents apart. Even an exact 440 Hz could only be shown as +3.9 cents (lag 100 is 441 Hz), and the needle would move in 17-cent jumps.
+- **E7 (violin):** the two nearest lags are 28 cents flat and 76 cents sharp. The sharp one is already closer to the next note up.
+- **C8 (piccolo):** the nearest lags are 75 cents flat and 90 cents sharp. Neither shows C8 at all.
+
+A tuner needs a resolution of a cent or two everywhere. Upsampling the signal would also help, but every factor of upsampling multiplies the number of lags to compute. Interpolating between the three values around the dip costs only a handful of operations.
+
+**How.** Fit a parabola through the dip's value s₀ at the whole lag τ and its neighbours s₋ at τ − 1 and s₊ at τ + 1. Written in terms of the offset x from τ, it is p(x) = a·x² + b·x + s₀ with a = (s₋ − 2s₀ + s₊) / 2 and b = (s₊ − s₋) / 2. Its minimum, at x = −b / 2a, is the refined period. The detector takes the refined period from this parabola on d′. The paper takes it from raw d instead (see below):
 
 ```
 τ_refined = τ + ½ · (d′(τ−1) − d′(τ+1)) / (d′(τ−1) − 2·d′(τ) + d′(τ+1))
 f = 44100 / τ_refined
 ```
 
-The paper's step 6 ("best local estimate", re-running the search around the chosen point in nearby frames) is not used. The smoothing in [section 6](#6-smoothing) takes its place.
+**Why a parabola.** At the bottom of any smooth dip the slope is zero, so close to it the curve is approximately d(τ₀) + ½·d″(τ₀)·(τ − τ₀)², a parabola (a Taylor expansion). For a pure sine of amplitude A, d(τ) is close to w·A²·(1 − cos(2πτ/T)): a cosine in τ, whose bowl is nearly a parabola. The approximation only holds near the bottom, which leads to the limit shown here:
+
+![The true difference function between samples, compared with the parabola through three samples, at 440 Hz and 2637 Hz](docs/images/yin-parabola-fit.svg)
+
+For a synthetic sine, the shifted signal can be computed for any fractional lag, so the true curve between the samples (grey) is known exactly. The blue dots are the detector's own whole-sample values, and the purple parabola goes through the three circled ones.
+
+- **440 Hz, 100 samples per period:** the three points cover a tiny part of the bowl. Over the whole ±8 samples shown, the parabola and the true curve can't be told apart, and its minimum is within 0.001 samples of the true period.
+- **2637 Hz, 16.7 samples per period:** the bowl is only a few samples wide. Beyond about ±2 samples the parabola bends away from the true curve. Its minimum is still close, 0.002 samples off (0.24 cents), but the fewer samples per period, the larger the part of the bowl the three points cover, and the larger the error.
+
+The paper makes the same argument [1, section II E]. The autocorrelation of a band-limited signal is a sum of cosines, and its Taylor expansion has only even powers. The terms of degree 4 and higher come from the highest frequencies, so the parabola is accurate unless the signal has strong components above about a quarter of the sample rate. The paper also notes that interpolation is much cheaper than upsampling.
+
+**d′ or raw d?** The figure fits the parabola to raw d, because only raw d can be computed between samples. The detector fits it to d′, and that turns out to cost accuracy. The paper warns about exactly this. Its step 5 fits parabolas to d′ to compare the dips, but takes the period from the raw d [1, section II E]: "one finds that the estimate obtained in this way is slightly biased. To avoid this bias, the abscissa of the corresponding minimum of the raw difference function d(τ) is used instead." The detector here departs from the paper on this point.
+
+The bias comes from the normalization. d′(τ) = d(τ) · τ / Σ d(j). Around the dip the sum hardly changes, so d′ is roughly d multiplied by a factor that grows in proportion to τ. That factor tilts the bowl and pulls the minimum towards shorter lags, so readings come out sharp. The tilt matters more at short lags: one sample changes τ by 6 % at a period of 16.7 samples, but by only 1 % at 100. In the sweep below, interpolating on d′ is sharp at every frequency tested, and above 100 Hz it is 8 to 25 times less accurate than the same parabola on raw d. Following the paper and taking the period from raw d is the obvious fix. It has not been made yet, and the real recordings would need to be checked again afterwards.
+
+The paper uses interpolation for a second purpose that the detector also skips. It interpolates the depth of every dip before comparing it with the threshold, because at high frequencies a dip sampled at whole lags can look shallower than it really is. The detector compares the sampled values directly.
+
+![Parabola through a dip at a high sine, and the error with and without interpolation across the range](docs/images/yin-interpolation.svg)
+
+- **Top:** what the detector does, on d′, for the same 2637.02 Hz sine (violin E7, a unit test case). The whole-sample dip at τ = 17 alone gives 2594 Hz, 28 cents flat. The parabola through τ = 16, 17 and 18 has its minimum at 16.705: 2640.0 Hz, 1.9 cents sharp.
+- **Bottom:** the error for pure sines at 400 frequencies from 30 Hz to 4186 Hz.
+  - Whole-sample lag alone (orange): off by up to 1.6 cents below 100 Hz and up to 75 cents at the top.
+  - The detector's parabola on d′ (blue): below 0.1 cents up to about 500 Hz and below 1 cent up to about 1.5 kHz. Above 3.6 kHz, where a period is only 10–12 samples, it reaches up to 7 cents.
+  - The same parabola on raw d (green): at most 0.02 cents below 1 kHz and 0.9 cents at the top.
+
+The paper's step 6, "best local estimate", is not used [1, section II F]. For each analysis point, it looks at the estimates of nearby analysis points (within half the longest period), takes the one with the smallest d′, and runs the search again within ±20 % of it. Here the median smoothing and jump guard in [section 6](#6-smoothing) take its place. The paper deliberately avoided median smoothing so as to evaluate the method on its own (section VIII), and it points out the difference: step 6 chooses by quality (d′), not by continuity.
 
 ### Confidence
 
-The confidence is 1 − d′ at the chosen lag, clamped to 0–1. The paper calls d′ at the dip a measure of aperiodicity. Readings below 0.80 are dropped. Because the threshold is 0.15, this mostly filters out cases where the octave check moved to twice the lag and the dip there is less clean.
+The confidence is 1 − d′ at the chosen lag, clamped to 0–1. The paper shows that d′ at the period is proportional to the ratio of aperiodic to total power, and suggests using it as a confidence indicator [1, sections II D and V]. Readings below 0.80 are dropped. Because the threshold is 0.15, this mostly filters out cases where the octave check moved to twice the lag and the dip there is less clean.
+
+### Differences from the paper
+
+The paper was written and evaluated for speech, at 16 and 20 kHz. This detector is for tuning instruments at 44.1 kHz, and it differs from the paper in these points:
+
+| | Paper [1] | This detector |
+|---|---|---|
+| Search range | 40 Hz to a quarter of the sample rate | 30–4200 Hz |
+| Window | 25 ms, a new estimate every sample | w = 2048 samples (46 ms), a new estimate every 1024 samples |
+| Low-pass prefilter | 1 ms moving average (zero at 1 kHz) in the evaluation | none; it would weaken high notes |
+| Threshold (step 4) | 0.1 | 0.15 |
+| No dip below the threshold | take the global minimum | report no pitch |
+| Extra dip rules | none | near-deepest rule, octave check (step 3, 3b) |
+| Interpolation (step 5) | depth of every dip interpolated before choosing; period taken from raw d | only the chosen dip, and the period is taken from d′ (biased, see step 4) |
+| Step 6, best local estimate | yes | no; median smoothing with a jump guard instead |
+| Difference function | direct sum, or a recursion over time | FFT, exact for every lag |
 
 ## 4. The difference function by FFT
 
@@ -120,6 +194,8 @@ d(τ) = Σ x[j]²  +  Σ x[j+τ]²  −  2 · Σ x[j]·x[j+τ]
 - The first term is the same for every τ.
 - The second is a sliding sum. With prefix sums E[i] = Σ_{j<i} x[j]², it is E[τ+w] − E[τ], one subtraction per lag.
 - The third is the cross-correlation of the first w samples with the whole buffer. By the correlation theorem, a correlation is a product in the frequency domain: r = IFFT(conj(A) · B), where A and B are the FFTs of the two signals [4, section 13.2]. With an FFT [3] this takes O(n log n) for all lags at once instead of O(w · τ_max).
+
+The paper also mentions an FFT implementation [1, section V], but for its variant with a window that shrinks as τ grows (its Eq. 2). That variant needs a bias correction and makes large lags less reliable, so the paper calls it "not as good". That limitation does not apply here. The first w samples are correlated with the whole buffer, which gives the paper's Eq. (6) exactly for every lag. The result is the same as the direct loop, as [DifferenceFunctionTest](app/src/test/java/de/example/tunetheworld/dsp/DifferenceFunctionTest.kt) checks.
 
 Implementation details in [DifferenceFunction.kt](app/src/main/java/de/example/tunetheworld/dsp/DifferenceFunction.kt):
 
@@ -147,7 +223,7 @@ Measured by the unit tests on synthetic tones:
 | 440 Hz with added noise | 3 cents |
 | harmonic tones with a weak fundamental (65.41 Hz, 116.54 Hz) | 2 cents, right octave |
 
-High notes have short periods (10 samples at 4186 Hz), so the parabola has fewer points to work with. The usual tuning target of a few cents is still met. On real recordings, the median block-to-block jitter of steady notes must stay at or below 3 cents; see [SampleValidationTest](app/src/test/java/de/example/tunetheworld/sample/SampleValidationTest.kt).
+High notes have short periods (10 samples at 4186 Hz), so the three points cover more of the dip and the d′ tilt is stronger ([step 4](#step-4-parabolic-interpolation)). The finer sweep in the [step 4 figure](#step-4-parabolic-interpolation) shows errors of up to 7 cents between 3.6 and 4.2 kHz, only in the top few semitones of the piccolo. Below 1.5 kHz the error stays under 1 cent. On real recordings, the median block-to-block jitter of steady notes must stay at or below 3 cents; see [SampleValidationTest](app/src/test/java/de/example/tunetheworld/sample/SampleValidationTest.kt).
 
 Latency: a reading reflects the last 93 ms of sound and is updated every 23 ms. The median of 5 adds about two hops (about 46 ms) of delay. In the recordings a note is shown within 300 ms of its first loud block, usually much sooner.
 
