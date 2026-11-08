@@ -7,3 +7,4 @@ local.properties
 
 # Papers and other reference material that may not be redistributed
 external/
+__pycache__/
