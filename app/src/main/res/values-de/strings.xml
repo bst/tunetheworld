@@ -4,10 +4,17 @@
     <string name="info_line">A4 = %1$d Hz · %2$s</string>
     <string name="reference_pitch">Kammerton</string>
     <string name="reset_reference">Auf 440 Hz zurücksetzen</string>
-    <string name="display_mode">Anzeige</string>
-    <string name="mode_tenor">Tenorsax (B)</string>
-    <string name="mode_alto">Altsax (Es)</string>
-    <string name="mode_concert">Klingend (C)</string>
+    <string name="transposition">Transposition</string>
+    <string name="transposition_hint">Für transponierende Instrumente, damit das Stimmgerät den notierten Ton zeigt. Übliche Werte: +2 Trompete und Klarinette in B, +7 Horn in F, +9 Altsax, +12 Gitarre und Kontrabass, +14 Tenorsax, −12 Piccoloflöte.</string>
+    <plurals name="semitones">
+        <item quantity="one">%1$+d Halbton</item>
+        <item quantity="other">%1$+d Halbtöne</item>
+    </plurals>
+    <string name="transposition_concert">Klingend</string>
+    <string name="transposition_short">in %1$s (%2$+d)</string>
+    <string name="transposition_concert_hint">Zeigt den klingenden Ton.</string>
+    <string name="written_c_sounds">Ein notiertes C4 klingt als %1$s%2$d.</string>
+    <string name="reset_transposition">Auf klingend zurücksetzen</string>
     <string name="sensitivity">Mikrofonempfindlichkeit</string>
     <string name="sensitivity_hint">Nach links für leise Instrumente. Nach rechts, wenn Hintergrundgeräusche stören. Die Markierung im Pegelbalken zeigt diese Schwelle.</string>
     <string name="gate_format">Schwelle: %1$d dB</string>

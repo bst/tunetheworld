@@ -29,14 +29,14 @@ class SettingsRepositoryTest {
 
     @Test
     fun defaults() = runBlocking {
-        assertEquals(TunerSettings(440, Transposition.TENOR_BB), repo.settings.first())
+        assertEquals(TunerSettings(440, Transposition.CONCERT), repo.settings.first())
     }
 
     @Test
     fun persistsValues() = runBlocking {
         repo.setReferenceHz(442)
-        repo.setTransposition(Transposition.ALTO_EB)
-        assertEquals(TunerSettings(442, Transposition.ALTO_EB), repo.settings.first())
+        repo.setTransposition(-3)
+        assertEquals(TunerSettings(442, -3), repo.settings.first())
     }
 
     @Test
@@ -58,8 +58,26 @@ class SettingsRepositoryTest {
     }
 
     @Test
-    fun unknownTranspositionFallsBackToTenor() = runBlocking {
+    fun clampsTransposition() = runBlocking {
+        repo.setTransposition(40)
+        assertEquals(Transposition.MAX, repo.settings.first().transposition)
+        repo.setTransposition(-40)
+        assertEquals(Transposition.MIN, repo.settings.first().transposition)
+    }
+
+    @Test
+    fun migratesVersion1Modes() = runBlocking {
+        store.edit { it[stringPreferencesKey("transposition")] = "TENOR_BB" }
+        assertEquals(14, repo.settings.first().transposition)
+        store.edit { it[stringPreferencesKey("transposition")] = "ALTO_EB" }
+        assertEquals(9, repo.settings.first().transposition)
+        repo.setTransposition(2)
+        assertEquals(2, repo.settings.first().transposition)
+    }
+
+    @Test
+    fun unknownVersion1ModeFallsBackToConcert() = runBlocking {
         store.edit { it[stringPreferencesKey("transposition")] = "SOPRANO" }
-        assertEquals(Transposition.TENOR_BB, repo.settings.first().transposition)
+        assertEquals(Transposition.CONCERT, repo.settings.first().transposition)
     }
 }

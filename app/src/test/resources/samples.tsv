@@ -1,0 +1,49 @@
+# Test recordings from the University of Iowa Musical Instrument Samples (https://theremin.music.uiowa.edu/MIS.html).
+# "Freely available ... may be downloaded and used for any projects, without restrictions." Downloaded at build time, not stored in the repository.
+# Read by the downloadSamples task in app/build.gradle.kts and by SampleValidationTest. Paths are relative to
+# https://theremin.music.uiowa.edu/sound files/MIS Pitches - 2014/ and the file name states the sounding note.
+# kind: STEADY (no vibrato), VIBRATO, PLUCKED (dies away). transposition: the instrument's usual one in semitones.
+# flags: octave-jump = the player's tone really jumps up an octave for a moment (checked by ear).
+# path	sha256	transposition	kind	flags
+Woodwinds/Eb Alto Saxophone/AltoSax.NoVib.ff.Db3.stereo.aif	22cf0a09d6ffef7988a3ce761fcf0b2e3f3d568e94fe9fa94aa291354546df83	9	STEADY	-
+Woodwinds/Eb Alto Saxophone/AltoSax.NoVib.ff.D3.stereo.aif	7b9701e53e0ef9c711542bdee1642e54778b3ac1e82294751ddc8c750d9eb69a	9	STEADY	octave-jump
+Woodwinds/Eb Alto Saxophone/AltoSax.NoVib.ff.C5.stereo.aif	0b4c5a57d75c1f35f5e5a30dd83a3af64629dc36e49e2f7531a95338cf3d2422	9	STEADY	-
+Woodwinds/Eb Alto Saxophone/AltoSax.vib.ff.F5.stereo.aif	137921200cb7ccfa656f96fc0119157ddc47624bf8c037f815c68c888dddcf8c	9	VIBRATO	-
+Strings/Double Bass/Bass.arco.ff.sulE.E1.stereo.aif	ca8c8d9ecf8ddbedc956c9b10cd12aaf3db0a5a366b86d3d974bd29c435f579c	12	STEADY	-
+Strings/Double Bass/Bass.arco.ff.sulC.C1.stereo.aif	4cb18629ead44ff8c1dabe0d39a5c1f4394b3e6058a17f5a3d0b9610cc0fbad2	12	STEADY	-
+Strings/Double Bass/Bass.arco.ff.sulA.A2.stereo.aif	a768b3bbe7c7110d798c9a6c8116db3ac5382d1e7ff76b2779a62444a9d33fa0	12	STEADY	-
+Strings/Double Bass/Bass.pizz.ff.sulE.E1.stereo.aif	e74ee4be31d4afa9b41ce0222af477cc320bede4373a269bc649009555ac6f7a	12	PLUCKED	-
+Strings/Double Bass/Bass.pizz.ff.sulA.A1.stereo.aif	178ad88c9c36823c6fca75df195405691abd714990b3226d3daa44e9e81ecf0a	12	PLUCKED	-
+Strings/Cello/Cello.arco.ff.sulC.C2.stereo.aif	56798a31bfb79a784baba213e9cffd9ad1565b8bc7f3ce08b557a82f432d6725	0	STEADY	-
+Strings/Cello/Cello.arco.ff.sulA.A3.stereo.aif	b697c7610dcd80c9958781909b5c7cca4c8850586e80a1c55e8b2892000c534c	0	STEADY	-
+Strings/Cello/Cello.arco.ff.sulA.A5.stereo.aif	bea6a39ea3596df086766d4c21e01250650d6e7855491638a4141c070e25140c	0	STEADY	-
+Strings/Cello/Cello.pizz.ff.sulG.G2.stereo.aif	b2948217098d0019a0c632e48f61e0f76b6ddade9b85653cb1e33adcb1e91cb0	0	PLUCKED	-
+Strings/Violin/Violin.arco.ff.sulG.G3.stereo.aif	57e40d4b85e9d9b57956a991e8a99eb769a6a1bbf160780819464e30e044186f	0	STEADY	-
+Strings/Violin/Violin.arco.ff.sulA.A4.stereo.aif	d6da87eedece3fd1d170fef8096c57fa37d0512bf17bcc0cad456e7fbbe8eea1	0	STEADY	-
+Strings/Violin/Violin.arco.ff.sulE.E6.stereo.aif	ccaa015ee819974445e20a594e0ec0d2d0c7f7f99154ab2787722072d6a64c08	0	STEADY	-
+Strings/Violin/Violin.arco.ff.sulE.E7.stereo.aif	3c4f5a9050e223e0fa71876e4e1bb4ce64851a6558328c21d4a532f853b53225	0	STEADY	-
+Strings/Violin/Violin.pizz.ff.sulA.A4.stereo.aif	90c8e8e34283159890078a7da884102173a3675c07ba2cade0e17dfd0562713f	0	PLUCKED	-
+Woodwinds/Flute/Flute.nonvib.ff.C4.stereo.aif	0ac77e304c0c9e86fb823d6d04bf13596d4900f8a36f705c4cb5bf87cb72eab7	0	STEADY	-
+Woodwinds/Flute/Flute.vib.ff.A5.stereo.aif	ab0e368340d04292f376f5bb98343083f84fea8879c2d67b33c9df1f9af1dfa8	0	VIBRATO	-
+Woodwinds/Flute/Flute.nonvib.ff.C7.stereo.aif	6a1214878f84fb68f721e93aab93f1a1eb1fdc7589db5b45b99a19586d91268b	0	STEADY	-
+Woodwinds/Bb Clarinet/BbClarinet.ff.D3.stereo.aif	4e33ff78b776366293dd285305d95336af7f469df9a4a71edd533db642b2be2f	2	STEADY	-
+Woodwinds/Bb Clarinet//BbClarinet.ff.C5.stereo.aif	65c379f07991cd18a6b8ce7cd8ea8ee37e161edef7c03a4605e9c3b85798b271	2	STEADY	-
+Woodwinds/Bb Clarinet//BbClarinet.ff.Bb6.stereo.aif	343a343b89c1801cf40c4c58b076203213830a3e50ba6f0d47e7a8b56897a01e	2	STEADY	-
+Brass/BbTrumpet/Trumpet.novib.ff.E3.stereo.aif	563f2926003ac26b97762e440a55e5a8bcea321a7007be804b842aa3b6f56444	2	STEADY	-
+Brass/BbTrumpet/Trumpet.vib.ff.Bb4.stereo.aif	f04cf7cf174d3b26240fd57bd5d7bd81df1bd15ad38ed1930e68c42a24a8c685	2	VIBRATO	-
+Brass/BbTrumpet/Trumpet.novib.ff.D6.stereo.aif	e0cb33ebc9e1a540f5787ba2b4f89b27c28d3711eb25419a7198150c1182599d	2	STEADY	-
+Brass/Horn/Horn.ff.Bb1.stereo.aif	ee8ef3115ca7b3e3accb6eb2b07bee071f2c5a9da923eff22376b3e46e7be3eb	7	STEADY	-
+Brass/Horn/Horn.ff.F3.stereo.aif	38ecc7c44c974b8c8fa704f3a4faec8fa5b6cd6ea6bac6d015a2fa84052ee145	7	STEADY	-
+Brass/Horn/Horn.ff.F5.stereo.aif	b07ebf7906973e36998d7e3bddad72d8c0c9ad00855c2e779ff4575961a6378b	7	STEADY	-
+Brass/Tenor Trombone/TenorTrombone.ff.E2.stereo.aif	23a6d61c3dd85ff44efc431a93a835bed59f46cd5d99dfcb3508254ad04cdc1d	0	STEADY	-
+Brass/Tenor Trombone/TenorTrombone.ff.Bb3.stereo.aif	6fd60183201dd769467b513727643c7fc05c8326a87788ac35a27744043cdcd8	0	STEADY	-
+Brass/Tenor Trombone/TenorTrombone.ff.C5.stereo.aif	12230c4c3273f81a5f52f6c73ffe9727c7f7b7fdd14ba99c6ee5ed980255bce0	0	STEADY	-
+Brass/Tuba/Tuba.ff.D1.stereo.aif	73ce4b778fa78b9238039e864736f0e8822a6954f41125db3527caa335ca917f	0	STEADY	-
+Brass/Tuba/Tuba.ff.F2.stereo.aif	3f23cc03594ea47227b1b27db0dc6cd4f6c874e50e0828abb74cc2fc582d9ab1	0	STEADY	-
+Brass/Tuba/Tuba.ff.Bb3.stereo.aif	4ec60e48bc6df83dcc050d80194669212c8a1afbb71c74fd9f85424b3c507979	0	STEADY	-
+Woodwinds/Bassoon/Bassoon.ff.Bb1.stereo.aif	dac6ffa4432dee663b49662cd7d1812d5a150f0cb9d7469906b3370f2489f8e9	0	STEADY	-
+Woodwinds/Bassoon/Bassoon.ff.F3.stereo.aif	2037527ad7dbb10f40cc5e298c32bf0b7782557f54924472fe0ad4a4feb8ebcc	0	STEADY	-
+Woodwinds/Bassoon/Bassoon.ff.D5.stereo.aif	594d5be5450899730acbfa5ffb7c850b8d312cc0d3b66758041ac89980f50e03	0	STEADY	-
+Woodwinds/Oboe/Oboe.ff.Bb3.stereo.aif	0c6380976976d261c678cc170700052b69e008d2bc0137a8eaec47f9b3c0363a	0	STEADY	-
+Woodwinds/Oboe/Oboe.ff.A4.stereo.aif	249c57f5f17e9f7c7694afafce848c78bbe77f065cc0e4681918f3d19fc306b7	0	STEADY	-
+Woodwinds/Oboe/Oboe.ff.G6.stereo.aif	e9ba18b8dedbc2967e7d66beef0c59e00eb55a79f58884878182ea2605348488	0	STEADY	-

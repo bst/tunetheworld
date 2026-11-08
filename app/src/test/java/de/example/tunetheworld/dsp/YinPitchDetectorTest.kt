@@ -1,5 +1,6 @@
 package de.example.tunetheworld.dsp
 
+import de.example.tunetheworld.engine.TunerConfig
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.log2
@@ -13,7 +14,13 @@ import org.junit.Test
 
 class YinPitchDetectorTest {
     private val sampleRate = 44100
-    private fun detector() = YinPitchDetector(sampleRate, 4096, 90f, 1100f)
+    private fun detector() = YinPitchDetector(
+        sampleRate,
+        TunerConfig.WINDOW_SIZE,
+        TunerConfig.MIN_FREQ_HZ,
+        TunerConfig.MAX_FREQ_HZ,
+        TunerConfig.YIN_THRESHOLD
+    )
 
     /** Sum of sines at f0, 2*f0, 3*f0 ... with the given amplitudes. */
     private fun tone(f0: Double, harmonics: FloatArray, n: Int = 4096): FloatArray = FloatArray(n) { i ->
@@ -38,6 +45,23 @@ class YinPitchDetectorTest {
     @Test fun pureSineLow() = assertPitch(103.83, floatArrayOf(0.5f), 1.0)
 
     @Test fun pureSineHigh() = assertPitch(1000.0, floatArrayOf(0.5f), 1.0)
+
+    @Test fun pureSineDoubleBassLowE() = assertPitch(41.20, floatArrayOf(0.5f), 1.0)
+
+    @Test fun pureSineFiveStringBassLowB() = assertPitch(30.87, floatArrayOf(0.5f), 1.0)
+
+    // Period of 16.7 samples: the lag falls between whole samples, so the accuracy is lower up here
+    @Test fun pureSineViolinE7() = assertPitch(2637.02, floatArrayOf(0.5f), 3.0)
+
+    @Test fun pureSinePiccoloC8() = assertPitch(4186.01, floatArrayOf(0.5f), 5.0)
+
+    @Test
+    fun lowStringWithWeakFundamentalIsNotAnOctaveHigh() {
+        // Fundamental almost gone, as on a low string dying away
+        val r = detector().detect(tone(65.41, floatArrayOf(0.1f, 1.0f, 0.5f, 0.3f)))
+        assertNotNull(r)
+        assertTrue("got ${r!!.frequencyHz} Hz", abs(cents(r.frequencyHz, 65.41)) < 2.0)
+    }
 
     @Test
     fun saxLikeLowToneIsNotAnOctaveHigh() {

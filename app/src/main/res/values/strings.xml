@@ -8,10 +8,19 @@
     <string name="info_line">A4 = %1$d Hz · %2$s</string>
     <string name="reference_pitch">Reference pitch</string>
     <string name="reset_reference">Reset to 440 Hz</string>
-    <string name="display_mode">Display</string>
-    <string name="mode_tenor">Tenor sax (B♭)</string>
-    <string name="mode_alto">Alto sax (E♭)</string>
-    <string name="mode_concert">Concert (C)</string>
+    <string name="transposition">Transposition</string>
+    <string name="transposition_hint">For transposing instruments, so the tuner shows the written note. Common values: +2 trumpet and clarinet in B♭, +7 horn in F, +9 alto sax, +12 guitar and double bass, +14 tenor sax, −12 piccolo.</string>
+    <plurals name="semitones">
+        <item quantity="one">%1$+d semitone</item>
+        <item quantity="other">%1$+d semitones</item>
+    </plurals>
+    <string name="transposition_concert">Concert pitch</string>
+    <!-- %1$s is the key, for example B♭, %2$+d the semitones, for example +14 -->
+    <string name="transposition_short">in %1$s (%2$+d)</string>
+    <string name="transposition_concert_hint">Shows the sounding note.</string>
+    <!-- %1$s note name, %2$d octave, for example "B♭" and 2 -->
+    <string name="written_c_sounds">A written C4 sounds as %1$s%2$d.</string>
+    <string name="reset_transposition">Reset to concert pitch</string>
     <string name="sensitivity">Microphone sensitivity</string>
     <string name="sensitivity_hint">Move left for quiet instruments. Move right if background noise confuses the tuner. The marker on the level bar shows this threshold.</string>
     <string name="gate_format">Threshold: %1$d dB</string>
