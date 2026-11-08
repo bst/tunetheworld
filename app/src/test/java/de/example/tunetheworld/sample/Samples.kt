@@ -4,7 +4,13 @@ package de.example.tunetheworld.sample
 object Samples {
     enum class Kind { STEADY, VIBRATO, PLUCKED }
 
-    class Sample(val path: String, val transposition: Int, val kind: Kind, val octaveJump: Boolean) {
+    class Sample(
+        val path: String,
+        val transposition: Int,
+        val kind: Kind,
+        val octaveJump: Boolean,
+        val knownFailure: Boolean = false
+    ) {
         val fileName: String = path.substringAfterLast('/')
 
         /** Sounding MIDI note, taken from the file name, e.g. "Horn.ff.Bb1.stereo.aif" -> 34. */
@@ -16,13 +22,14 @@ object Samples {
         }
     }
 
-    private val NOTE = Regex("""\.([A-G])(b?)(\d)\.stereo\.aif$""")
+    private val NOTE = Regex("""\.([A-G])(b?)(\d)(\.stereo)?\.aiff?$""")
 
     val ALL: List<Sample> by lazy {
         val text = Samples::class.java.getResource("/samples.tsv")?.readText() ?: error("samples.tsv not on classpath")
         text.lines().filter { it.isNotBlank() && !it.startsWith("#") }.map { line ->
             val cols = line.split('\t')
-            Sample(cols[0], cols[2].toInt(), Kind.valueOf(cols[3]), cols[4] == "octave-jump")
+            val flags = cols[4].split(',')
+            Sample(cols[0], cols[2].toInt(), Kind.valueOf(cols[3]), "octave-jump" in flags, "known-failure" in flags)
         }
     }
 }

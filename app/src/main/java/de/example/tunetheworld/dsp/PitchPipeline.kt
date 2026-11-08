@@ -46,6 +46,7 @@ class PitchPipeline(
         val oldest = rms(window, 0, TunerConfig.HOP_SIZE)
         if (newest < gate || oldest < gate) {
             smoother.reset()
+            detector.reset()
             return null
         }
         val result = detector.detect(window) ?: return null
@@ -56,6 +57,7 @@ class PitchPipeline(
     fun reset() {
         filled = 0
         smoother.reset()
+        detector.reset()
         levelDb = TunerConfig.METER_FLOOR_DB
     }
 }

@@ -6,7 +6,7 @@ object TunerConfig {
     const val HOP_SIZE = 1024 // new samples per analysis (about 23 ms)
     const val MIN_FREQ_HZ = 30f // lower search limit: B0, lowest string of a five-string bass
     const val MAX_FREQ_HZ = 4200f // upper search limit: just above C8, the top of the piccolo
-    const val YIN_THRESHOLD = 0.15f // YIN absolute threshold
+    const val YIN_THRESHOLD = 0.20f // YIN absolute threshold; matches MIN_CONFIDENCE (see docs/research)
     const val MIN_CONFIDENCE = 0.80f // discard results below this
     const val DEFAULT_GATE_DB = -40f // default level gate: no analysis below this (dBFS)
     const val MIN_GATE_DB = -60f // most sensitive gate setting, for quiet instruments

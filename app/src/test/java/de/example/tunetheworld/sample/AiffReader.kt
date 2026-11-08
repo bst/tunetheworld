@@ -4,7 +4,7 @@ import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-/** Minimal AIFF reader for tests: 24-bit big-endian PCM, any channel count, mixed down to mono. */
+/** Minimal AIFF reader for tests: 16- or 24-bit big-endian PCM, any channel count, mixed down to mono. */
 object AiffReader {
     class Audio(val sampleRate: Int, val samples: FloatArray)
 
@@ -35,7 +35,7 @@ object AiffReader {
             pos = body + size + (size and 1) // chunks are padded to even length
         }
         require(channels > 0 && dataStart >= 0) { "${file.name}: missing COMM or SSND chunk" }
-        require(bits == 24) { "${file.name}: expected 24-bit PCM but found $bits-bit" }
+        require(bits == 16 || bits == 24) { "${file.name}: expected 16- or 24-bit PCM but found $bits-bit" }
         require(rate == 44100.0) { "${file.name}: expected 44100 Hz but found $rate Hz" }
 
         val out = FloatArray(frames)
@@ -43,12 +43,17 @@ object AiffReader {
         for (i in 0 until frames) {
             var sum = 0f
             for (c in 0 until channels) {
-                // Sign-extend the 3 big-endian bytes
-                val v = (buf.get(p).toInt() shl 16) or
-                    ((buf.get(p + 1).toInt() and 0xFF) shl 8) or
-                    (buf.get(p + 2).toInt() and 0xFF)
-                sum += v / 8388608f
-                p += 3
+                if (bits == 24) {
+                    // Sign-extend the 3 big-endian bytes
+                    val v = (buf.get(p).toInt() shl 16) or
+                        ((buf.get(p + 1).toInt() and 0xFF) shl 8) or
+                        (buf.get(p + 2).toInt() and 0xFF)
+                    sum += v / 8388608f
+                    p += 3
+                } else {
+                    sum += buf.getShort(p) / 32768f
+                    p += 2
+                }
             }
             out[i] = sum / channels
         }

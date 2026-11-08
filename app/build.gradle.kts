@@ -84,7 +84,7 @@ ktlint {
 // https://theremin.music.uiowa.edu/MIS.html
 val downloadSamples = tasks.register<DownloadSamples>("downloadSamples") {
     val manifest = file("src/test/resources/samples.tsv")
-    baseUrl = "https://theremin.music.uiowa.edu/sound%20files/MIS%20Pitches%20-%202014/"
+    baseUrl = "https://theremin.music.uiowa.edu/sound%20files/"
     files = manifest.readLines()
         .filter { it.isNotBlank() && !it.startsWith("#") }
         .associate { line -> line.split('\t').let { it[0] to it[1] } }
