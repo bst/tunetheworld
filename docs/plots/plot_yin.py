@@ -201,60 +201,26 @@ def dip_choice(data: Path, out: Path):
 
 
 def interpolation(data: Path, out: Path):
-    """Step 4: parabola through the dip, and the error with and without it across the range."""
-    t, meta = load(data, "interpolation")
-    tau, c = t["tau"], t["cmnd"]
-    f0 = num(meta, "expected_hz")
-    true_lag = SR / f0
-    lag = int(num(meta, "final_lag"))
-    refined = num(meta, "refined_lag")
-    pa, pb, pc = (float(v) for v in meta["parabola"].split())
-
-    fig, ax = plt.subplots(2, 1, figsize=(8, 8), facecolor="white", gridspec_kw={"hspace": 0.45})
-
-    a = ax[0]
-    lo, hi = lag - 4, lag + 4
-    a.plot(tau[lo:hi + 1], c[lo:hi + 1], color=GREY, lw=0.7, ls=":")
-    a.plot(tau[lo:hi + 1], c[lo:hi + 1], "o", color=BLUE, ms=5)
-    fit = np.linspace(lag - 1.6, lag + 1.6, 200)
-    a.plot(fit, pa * (fit - lag) ** 2 + pb * (fit - lag) + pc, color=PURPLE, lw=1.3)
-    a.plot([lag - 1, lag, lag + 1], c[lag - 1:lag + 2], "o", color=PURPLE, ms=7, mfc="none", mew=1.5)
-    a.axvline(true_lag, color=ORANGE, lw=0.9, ls="--")
-    a.text(true_lag + 0.08, 0.95, f"true period\n{true_lag:.3f}", color=ORANGE, fontsize=9, va="top")
-    vertex = pc - pb * pb / (4 * pa)
-    a.plot([refined], [vertex], "D", color=GREEN, ms=6)
-    a.annotate(f"parabola minimum τ = {refined:.3f}\n→ {num(meta, 'frequency_hz'):.1f} Hz, "
-               f"{cents(num(meta, 'frequency_hz'), f0):+.1f} cents",
-               xy=(refined, vertex), xytext=(lo + 0.2, 0.62), fontsize=9, color=GREEN,
-               arrowprops=dict(arrowstyle="->", color=GREEN, lw=0.8))
-    a.annotate(f"whole-sample dip τ = {lag}\n→ {SR / lag:.1f} Hz, {cents(SR / lag, f0):+.0f} cents",
-               xy=(lag, c[lag]), xytext=(lag + 1.4, 0.45), fontsize=9, color=BLUE,
-               arrowprops=dict(arrowstyle="->", color=BLUE, lw=0.8))
-    a.set_xlim(lo - 0.3, hi + 0.3)
-    a.set_ylim(-0.05, 1.0)
-    a.set_title(f"Step 4: parabola through the dip and its neighbours, sine at {f0} Hz (violin E7), d′(τ)")
-    a.set_xlabel("lag τ (samples)")
-
+    """Step 4: the error with and without interpolation, for pure sines across the range."""
     s = np.genfromtxt(data / "sweep.csv", delimiter=",", names=True)
-    a = ax[1]
+    fig, a = plt.subplots(figsize=(8, 4.2), facecolor="white")
     floor = 1e-3
     a.loglog(s["f"], np.maximum(np.abs(cents(s["integer_lag"], s["f"])), floor), color=ORANGE, lw=0.9,
              label="whole-sample lag only")
-    a.loglog(s["f"], np.maximum(np.abs(cents(s["detected"], s["f"])), floor), color=BLUE, lw=1.1,
-             label="parabola on d′(τ) (what the detector does)")
-    a.loglog(s["f"], np.maximum(np.abs(cents(s["raw_d_parabola"], s["f"])), floor), color=GREEN, lw=1.1,
-             label="parabola on raw d(τ) (for comparison)")
-    a.axhline(5, color=GREY, lw=0.7, ls=":")
-    a.text(32, 5.6, "5 cents", color=GREY, fontsize=9)
+    a.loglog(s["f"], np.maximum(np.abs(cents(s["cmnd_parabola"], s["f"])), floor), color=GREY, lw=0.9,
+             label="parabola on d′(τ) (earlier version, biased)")
+    a.loglog(s["f"], np.maximum(np.abs(cents(s["detected"], s["f"])), floor), color=BLUE, lw=1.2,
+             label="parabola on raw d(τ) (what the detector does, as in the paper)")
+    a.axhline(1, color=GREY, lw=0.7, ls=":")
+    a.text(32, 1.12, "1 cent", color=GREY, fontsize=9)
     a.set_xlim(s["f"].min(), s["f"].max())
     a.set_ylim(floor, 200)
     a.set_xticks([30, 50, 100, 200, 500, 1000, 2000, 4000])
     a.set_xticklabels(["30", "50", "100", "200", "500", "1k", "2k", "4k"])
     a.legend(loc="upper left", frameon=False, fontsize=9)
-    a.set_title("Error for pure sines across the search range (log scale, below 0.001 cents drawn at 0.001)")
+    a.set_title("Step 4: error for pure sines across the search range (below 0.001 cents drawn at 0.001)")
     a.set_xlabel("frequency (Hz)")
-    a.set_ylabel("error (cents)")
-
+    a.set_ylabel("error (cents, log scale)")
     save(fig, out / "yin-interpolation.svg")
 
 

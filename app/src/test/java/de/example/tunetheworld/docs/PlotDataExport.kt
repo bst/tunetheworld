@@ -48,18 +48,14 @@ class PlotDataExport {
         continuous(out, "interpolation", 2637.02)
 
         // Step 4: error with and without interpolation for pure sines across the whole range
-        val sweep = StringBuilder("f,detected,integer_lag,raw_d_parabola\n")
+        val sweep = StringBuilder("f,detected,integer_lag,cmnd_parabola\n")
         val steps = 400
         for (i in 0..steps) {
             val f = exp(ln(TunerConfig.MIN_FREQ_HZ.toDouble()) + i * ln(4186.01 / TunerConfig.MIN_FREQ_HZ) / steps)
             val t = YinTrace(tone(f, floatArrayOf(0.5f)))
             t.checkAgainstDetector()
-            // The same parabola fitted to the raw d(τ) instead of d′(τ), for comparison
-            val s0 = t.diff[t.finalLag - 1].toDouble()
-            val s1 = t.diff[t.finalLag].toDouble()
-            val s2 = t.diff[t.finalLag + 1].toDouble()
-            val raw = t.finalLag + 0.5 * (s0 - s2) / (s0 - 2 * s1 + s2)
-            sweep.append("$f,${t.frequencyHz},${sampleRate.toDouble() / t.finalLag},${sampleRate / raw}\n")
+            val cmnd = sampleRate / t.refinedLagCmnd
+            sweep.append("$f,${t.frequencyHz},${sampleRate.toDouble() / t.finalLag},$cmnd\n")
         }
         File(out, "sweep.csv").writeText(sweep.toString())
     }
@@ -80,6 +76,7 @@ class PlotDataExport {
             "octave_applied" to t.octaveApplied,
             "final_lag" to t.finalLag,
             "refined_lag" to t.refinedLag,
+            "refined_lag_cmnd" to t.refinedLagCmnd,
             "frequency_hz" to t.frequencyHz,
             "confidence" to 1f - t.cmnd[t.finalLag],
             "parabola" to t.parabola!!.joinToString(" ")

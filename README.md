@@ -122,7 +122,7 @@ The app needs the `RECORD_AUDIO` permission. On first launch it explains why and
 The unit tests run on the JVM and need no device:
 
 - `NoteMapperTest`, `NoteNamesTest`, `TranspositionTest`: frequency to note and percent with and without transposition, German/English names, the key and the sounding note of a written C.
-- `YinPitchDetectorTest`: pure sines from 31 Hz to 4186 Hz (within 1 cent up to 1000 Hz, 3–5 cents at the top), sax-like and low-string tones with a weak fundamental that must not be detected an octave high, noise, silence, and a runtime budget.
+- `YinPitchDetectorTest`: pure sines from 31 Hz to 4186 Hz (all within 1 cent), sax-like and low-string tones with a weak fundamental that must not be detected an octave high, noise, silence, and a runtime budget.
 - `DifferenceFunctionTest`: the FFT difference function matches the plain definition (computed in double precision) on noise and harmonic tones, keeps exact zeros at the period of a perfectly periodic tone, and gives zero for silence.
 - `PitchSmootherTest`, `SignalUtilsTest`, `PitchPipelineTest`: smoothing, octave guard, RMS and dB conversion, and gate behaviour.
 - `SettingsRepositoryTest`: defaults, clamping, migration of the version 1 modes, and fallback for unknown stored values.

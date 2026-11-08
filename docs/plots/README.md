@@ -24,6 +24,6 @@ The figures in [docs/images](../images) are drawn from the app's own detector co
 | `yin-dip-choice.svg` | `clarinet.*`, `altosax.*` | Step 3: near-deepest rule (clarinet B♭6) and octave check (alto sax D3) |
 | `yin-lag-grid.svg` | none, computed from 44100 / τ | Step 4: frequencies that whole-sample lags can express |
 | `yin-parabola-fit.svg` | `sine440.*`, `interpolation.*`, `*-continuous.csv` | Step 4: true d(τ) between samples against the parabola through three samples |
-| `yin-interpolation.svg` | `interpolation.*`, `sweep.csv` | Step 4: the detector's parabola on a 2637 Hz sine, and the error across the range (whole samples, d′, raw d) |
+| `yin-interpolation.svg` | `sweep.csv` | Step 4: the error across the range (whole samples, parabola on raw d, parabola on d′) |
 
 Rerun both steps after changing the detector, and commit the updated SVGs. Unchanged figures give byte-identical files.

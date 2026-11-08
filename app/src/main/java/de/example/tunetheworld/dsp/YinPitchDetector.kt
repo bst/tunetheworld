@@ -60,16 +60,17 @@ class YinPitchDetector(
             if (double != -1 && diff[double] < OCTAVE_RATIO * diff[found]) found = double
         }
 
-        // Step 4: parabolic interpolation for sub-sample accuracy
-        val s0 = cmnd[found - 1]
-        val s1 = cmnd[found]
-        val s2 = cmnd[found + 1]
+        // Step 4: parabolic interpolation for sub-sample accuracy. Like the YIN paper, on the raw difference: d′ is d
+        // times a factor that grows with τ, which tilts the dip and reads sharp (by about 2 cents above 1 kHz).
+        val s0 = diff[found - 1]
+        val s1 = diff[found]
+        val s2 = diff[found + 1]
         val denom = s0 - 2f * s1 + s2
-        val refined = if (denom == 0f) found.toFloat() else found + 0.5f * (s0 - s2) / denom
+        val refined = if (denom <= 0f) found.toFloat() else found + 0.5f * (s0 - s2) / denom
 
         return PitchResult(
             frequencyHz = sampleRate / refined,
-            confidence = (1f - s1).coerceIn(0f, 1f)
+            confidence = (1f - cmnd[found]).coerceIn(0f, 1f)
         )
     }
 

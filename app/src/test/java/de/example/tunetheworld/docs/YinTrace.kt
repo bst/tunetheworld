@@ -49,24 +49,19 @@ class YinTrace(val buffer: FloatArray) {
     val octaveApplied = octaveCandidate != -1 && diff[octaveCandidate] < OCTAVE_RATIO * diff[nearDeepestLag]
     val finalLag = if (octaveApplied) octaveCandidate else nearDeepestLag
 
-    /** Step 4: the parabola a·(τ − finalLag)² + b·(τ − finalLag) + c through the dip and its neighbours. */
+    /** Step 4: the parabola a·(τ − finalLag)² + b·(τ − finalLag) + c through raw d at the dip and its neighbours. */
     val parabola: DoubleArray? = if (finalLag == -1) {
         null
     } else {
-        val s0 = cmnd[finalLag - 1].toDouble()
-        val s1 = cmnd[finalLag].toDouble()
-        val s2 = cmnd[finalLag + 1].toDouble()
+        val s0 = diff[finalLag - 1].toDouble()
+        val s1 = diff[finalLag].toDouble()
+        val s2 = diff[finalLag + 1].toDouble()
         doubleArrayOf((s0 - 2 * s1 + s2) / 2, (s2 - s0) / 2, s1)
     }
-    val refinedLag: Float = if (finalLag == -1) {
-        Float.NaN
-    } else {
-        val s0 = cmnd[finalLag - 1]
-        val s1 = cmnd[finalLag]
-        val s2 = cmnd[finalLag + 1]
-        val denom = s0 - 2f * s1 + s2
-        if (denom == 0f) finalLag.toFloat() else finalLag + 0.5f * (s0 - s2) / denom
-    }
+    val refinedLag: Float = if (finalLag == -1) Float.NaN else vertex(diff)
+
+    /** The same parabola fitted to d′ instead, as the detector did before following the paper. For comparison. */
+    val refinedLagCmnd: Float = if (finalLag == -1) Float.NaN else vertex(cmnd)
     val frequencyHz: Float get() = sampleRate / refinedLag
 
     fun checkAgainstDetector() {
@@ -80,6 +75,14 @@ class YinTrace(val buffer: FloatArray) {
         val real = detector.detect(buffer)?.frequencyHz
         val mine = if (finalLag == -1) null else frequencyHz
         check(real == mine) { "YinTrace no longer matches YinPitchDetector: $mine Hz instead of $real Hz" }
+    }
+
+    private fun vertex(v: FloatArray): Float {
+        val s0 = v[finalLag - 1]
+        val s1 = v[finalLag]
+        val s2 = v[finalLag + 1]
+        val denom = s0 - 2f * s1 + s2
+        return if (denom <= 0f) finalLag.toFloat() else finalLag + 0.5f * (s0 - s2) / denom
     }
 
     private fun firstDipBelow(limit: Float): Int {

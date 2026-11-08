@@ -50,10 +50,10 @@ class YinPitchDetectorTest {
 
     @Test fun pureSineFiveStringBassLowB() = assertPitch(30.87, floatArrayOf(0.5f), 1.0)
 
-    // Period of 16.7 samples: the lag falls between whole samples, so the accuracy is lower up here
-    @Test fun pureSineViolinE7() = assertPitch(2637.02, floatArrayOf(0.5f), 3.0)
+    // Periods of 16.7 and 10.5 samples: here the interpolation on raw d matters most (on d′ it read 2–5 cents sharp)
+    @Test fun pureSineViolinE7() = assertPitch(2637.02, floatArrayOf(0.5f), 1.0)
 
-    @Test fun pureSinePiccoloC8() = assertPitch(4186.01, floatArrayOf(0.5f), 5.0)
+    @Test fun pureSinePiccoloC8() = assertPitch(4186.01, floatArrayOf(0.5f), 1.0)
 
     @Test
     fun lowStringWithWeakFundamentalIsNotAnOctaveHigh() {
