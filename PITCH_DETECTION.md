@@ -2,7 +2,7 @@
 
 This document explains how Tune the World turns microphone samples into a note and a deviation in cents. It says which parts come from published methods, which are this project's own additions, and why each one is there. The short version is in the [README](README.md#how-it-works). The figures are drawn from the app's own code; [docs/plots/README.md](docs/plots/README.md) explains how to regenerate them. All constants live in [TunerConfig.kt](app/src/main/java/de/example/tunetheworld/engine/TunerConfig.kt).
 
-The core is the YIN algorithm [1], with the difference function computed by FFT [1, 3, 4], a first-dip rule borrowed from the McLeod Pitch Method [2], an octave check for low notes, and median smoothing [5].
+The core is the YIN algorithm [1], with the difference function computed by FFT [1, 3, 4], a first-dip rule borrowed from the McLeod Pitch Method [2], an octave check for low notes, an adapted form of the paper's "best local estimate" that remembers the previous block, and median smoothing [5].
 
 ## Overview
 
@@ -11,8 +11,7 @@ flowchart LR
     A["microphone<br/>44.1 kHz mono"] --> B["sliding window<br/>4096 samples, hop 1024"]
     B --> C{"level gate<br/>both ends of window"}
     C -- too quiet --> X["no reading"]
-    C -- loud enough --> D["YIN<br/>30–4200 Hz"]
-    D --> E{"confidence ≥ 0.80"}
+    C -- loud enough --> D["YIN<br/>30–4200 Hz<br/>+ memory of last block"]    D --> E{"confidence ≥ 0.80"}
     E -- no --> X
     E -- yes --> F["median of 5<br/>+ jump guard"]
     F --> G["note + cents<br/>reference, transposition"]
@@ -114,7 +113,9 @@ The paper's step 6, "best local estimate" [1, section II F], uses the fact that 
 
 Here the analysis points are 1024 samples apart, more than half the longest period (735 samples), so the previous block serves as the neighbourhood. If its dip was cleaner (lower d′) than the current one, the current block is searched again within ±20 % of the previous period. This repairs most of the remaining octave-up errors of low strings as their fundamental fades; on the bowed cello C2 alone it fixes 56 blocks.
 
-Applied as in the paper, it also carries errors forward. A tone that repeats after T also repeats after 2T, so an octave-low reading, for instance from a note's attack, fits every following block just as well. The guard that separates the two cases is the raw difference. At the true period of a low string with a weak fundamental, d is much smaller than at half the period, while a clean tone gives about the same d at T and at 2T. So the detector only moves to the previous period if raw d there is less than 0.3 times raw d at its own choice. This makes the detector stateful, so it forgets the previous block whenever the level gate closes, for example between two notes ([research log](docs/research/RESEARCH_LOG.md), experiment 5).
+Applied as in the paper, it also carries errors forward. A tone that repeats after T also repeats after 2T, so an octave-low reading, for instance from a note's attack, fits every following block just as well. The guard that separates the two cases is the raw difference. At the true period of a low string with a weak fundamental, d is much smaller than at half the period, while a clean tone gives about the same d at T and at 2T. So the detector only moves to the previous period if raw d there is less than 0.3 times raw d at its own choice.
+
+The new search within ±20 % takes the first dip below the threshold, or the deepest point if there is none. If the current block has no dip below the threshold at all, the detector takes this result without the raw-d comparison, because there is nothing to compare with. The confidence filter then decides whether it is shown. This makes the detector stateful, so it forgets the previous block whenever the level gate closes, for example between two notes ([research log](docs/research/RESEARCH_LOG.md), experiment 5).
 
 ### Remaining weak spots
 
@@ -157,7 +158,7 @@ The paper makes the same argument [1, section II E]. The autocorrelation of a ba
 
 The bias comes from the normalization. d′(τ) = d(τ) · τ / Σ d(j). Around the dip the sum hardly changes, so d′ is roughly d multiplied by a factor that grows in proportion to τ. That factor tilts the bowl and pulls the minimum towards shorter lags, so readings come out sharp. The tilt matters more at short lags: one sample changes τ by 6 % at a period of 16.7 samples, but by only 1 % at 100. The sweep below shows the result. On the test recordings, switching to raw d moved readings flat by about 1 cent for the highest notes (median shift: violin E7 1.4 cents, flute C7 1.0, oboe G6 0.9), and by a median of less than 0.1 cents for notes below about 500 Hz. No reading switched between "note" and "no note".
 
-The paper uses interpolation for a second purpose that the detector also skips. It interpolates the depth of every dip before comparing it with the threshold, because at high frequencies a dip sampled at whole lags can look shallower than it really is. The detector compares the sampled values directly, which is fine so far: with all 42 recordings passing, no case has turned up where this matters. A candidate for later.
+The paper uses interpolation for a second purpose that the detector also skips. It interpolates the depth of every dip before comparing it with the threshold, because at high frequencies a dip sampled at whole lags can look shallower than it really is. The detector compares the sampled values directly. Choosing by interpolated depths was tried on the 175 recordings and changed 3 of 15,359 blocks, none of them in a settled part. With a 4096-sample window, even a 10-sample period gives dips that are sampled well enough ([research log](docs/research/RESEARCH_LOG.md), experiment 3). Interpolated depths are only used in the octave check (step 3b), where they do matter.
 
 ![Error for pure sines across the search range: whole-sample lag, parabola on d′, parabola on raw d](docs/images/yin-interpolation.svg)
 
@@ -227,7 +228,8 @@ Measured by the unit tests on synthetic tones:
 |---|---|
 | 30.87 Hz (B0), 41.20 Hz (E1), 103.83 Hz, 440 Hz, 1000 Hz, 2637 Hz (E7), 4186 Hz (C8) | 1 cent |
 | 440 Hz with added noise | 3 cents |
-| harmonic tones with a weak fundamental (65.41 Hz, 116.54 Hz) | 2 cents, right octave |
+| harmonic tones with a weak fundamental (65.41 Hz, 116.54 Hz) or a dominant third harmonic (466.16 Hz) | 2 cents, right octave |
+| 65.41 Hz whose fundamental fades after a clean block (memory of step 3c) | 2 cents, right octave |
 
 The finer sweep in the [step 4 figure](#step-4-parabolic-interpolation) shows the error staying below 0.1 cents up to about 2 kHz and below 0.9 cents up to 4.2 kHz. High notes are the hardest case, because their short periods (10 samples at 4186 Hz) leave the three points covering more of the dip. On real recordings, the median block-to-block jitter of steady notes must stay at or below 3 cents; see [SampleValidationTest](app/src/test/java/de/example/tunetheworld/sample/SampleValidationTest.kt).
 
@@ -237,7 +239,7 @@ Latency: a reading reflects the last 93 ms of sound and is updated every 23 ms. 
 
 The detector's readings go through a median of the last 5 values [5]. A median removes single wrong readings completely, where a mean would smear them in, and it follows a real pitch change after a few blocks.
 
-A jump guard sits in front of it: a reading more than 0.8 semitones away from the current median is held back. Only when three such readings in a row agree with each other (within 0.8 semitones) is it treated as a new note, and the median starts over from there. Single octave errors are therefore never shown. Vibrato stays visible, because it moves the pitch by much less than 0.8 semitones. The tests check that vibrato notes still show a range of at least 8 cents.
+A jump guard sits in front of it: a reading more than 0.8 semitones away from the current median is held back. Only when three such readings in a row agree with each other (within 0.8 semitones) is it treated as a new note, and the median starts over from there. Single octave errors are therefore never shown. Vibrato stays visible, because it moves the pitch by much less than 0.8 semitones. The tests check that vibrato notes still show a range of at least 6 cents.
 
 ## 7. From frequency to note
 
@@ -253,7 +255,7 @@ This is twelve-tone equal temperament, the same mapping MIDI uses. The transposi
 ## 8. Testing
 
 - **Unit tests** check each stage on synthetic signals: sines across the range, harmonic tones with a weak fundamental or a dominant third harmonic, the memory of step 3c, noise, silence, and the FFT against the direct definition.
-- **Real recordings:** [SampleValidationTest](app/src/test/java/de/example/tunetheworld/sample/SampleValidationTest.kt) runs the complete pipeline on 175 recordings from the University of Iowa Musical Instrument Samples [6]. They cover every instrument of the collection, 25 in all, from double bass and tuba to glockenspiel, crotales and piano, with their lowest, highest and two middle notes. They include vibrato, quiet notes, and plucked and struck notes. Each note is split into attack, settled part and release. Each recording is judged against its player's reference pitch, because some players are 50–80 cents out of tune. The settled part is judged strictly: the right note in at least 95 % of blocks, and a median jitter of at most 3 cents. The 8 recordings marked `known-failure` are run and reported but do not fail the test. The recordings are downloaded on demand and checked against SHA-256 hashes listed in [samples.tsv](app/src/test/resources/samples.tsv); the README explains the license.
+- **Real recordings:** [SampleValidationTest](app/src/test/java/de/example/tunetheworld/sample/SampleValidationTest.kt) runs the complete pipeline on 175 recordings from the University of Iowa Musical Instrument Samples [6]. They cover every instrument of the collection, 25 in all, from double bass and tuba to glockenspiel, crotales and piano, with their lowest, highest and two middle notes. They include vibrato, quiet notes, and plucked and struck notes. Each note is split into attack, settled part and release. Each recording is judged against its player's reference pitch, because some players are 50–80 cents out of tune. At least 70 % of the blocks above the gate must give a reading (40 % for plucked and struck notes), the first within 300 ms. The settled part is judged strictly: the right note in at least 95 % of its readings, and a median jitter of at most 3 cents. The 8 recordings marked `known-failure` are run and reported but do not fail the test. The recordings are downloaded on demand and checked against SHA-256 hashes listed in [samples.tsv](app/src/test/resources/samples.tsv); the README explains the license.
 - **Block-by-block evaluation:** [EvaluationExport](app/src/test/java/de/example/tunetheworld/sample/EvaluationExport.kt) and [evaluate.py](docs/research/evaluate.py) classify every analysis block of every recording and compare two detector versions block by block. The [research log](docs/research/RESEARCH_LOG.md) uses them to test the ideas from the YIN paper and records what was accepted or rejected.
 
 ## References
