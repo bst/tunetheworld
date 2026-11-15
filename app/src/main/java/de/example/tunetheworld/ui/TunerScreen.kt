@@ -80,7 +80,11 @@ fun TunerScreen(viewModel: TunerViewModel = viewModel()) {
             }
         }
         Text(
-            stringResource(R.string.info_line, state.settings.referenceHz, modeLabel(state.settings.transposition)),
+            stringResource(
+                R.string.info_line,
+                state.settings.referenceHz,
+                transpositionLabel(state.settings.transposition, language)
+            ),
             style = MaterialTheme.typography.bodyMedium
         )
 

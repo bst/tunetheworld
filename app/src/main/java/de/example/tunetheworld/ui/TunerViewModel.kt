@@ -12,7 +12,6 @@ import de.example.tunetheworld.data.TunerSettings
 import de.example.tunetheworld.engine.TunerConfig
 import de.example.tunetheworld.engine.TunerEngine
 import de.example.tunetheworld.music.NoteMapper
-import de.example.tunetheworld.music.Transposition
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -96,8 +95,8 @@ class TunerViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch { repository.setGateDb(db) }
     }
 
-    fun setTransposition(t: Transposition) {
-        viewModelScope.launch { repository.setTransposition(t) }
+    fun setTransposition(semitones: Int) {
+        viewModelScope.launch { repository.setTransposition(semitones) }
     }
 
     private companion object {

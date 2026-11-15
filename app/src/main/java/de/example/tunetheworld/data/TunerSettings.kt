@@ -5,6 +5,7 @@ import de.example.tunetheworld.music.Transposition
 
 data class TunerSettings(
     val referenceHz: Int = 440,
-    val transposition: Transposition = Transposition.TENOR_BB,
+    /** Semitones the displayed note lies above the sounding note, see [Transposition]. */
+    val transposition: Int = Transposition.CONCERT,
     val gateDb: Float = TunerConfig.DEFAULT_GATE_DB
 )

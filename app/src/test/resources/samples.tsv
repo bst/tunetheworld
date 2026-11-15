@@ -1,0 +1,185 @@
+# Test recordings from the University of Iowa Musical Instrument Samples (https://theremin.music.uiowa.edu/MIS.html).
+# "Freely available ... may be downloaded and used for any projects, without restrictions." Downloaded at build time, not stored in the repository.
+# Read by the downloadSamples task in app/build.gradle.kts and by SampleValidationTest. Paths are relative to
+# https://theremin.music.uiowa.edu/sound files/ and the file name states the note (see flags for exceptions).
+# kind: STEADY (no vibrato), VIBRATO, PLUCKED (struck or plucked, dies away). transposition: the instrument's usual one in semitones.
+# flags: octave-jump = the player's tone really jumps up an octave for a moment (checked by ear).
+# known-failure = a real detector error that remains (see docs/research/RESEARCH_LOG.md); run and reported, not failed.
+# The first 42 lines are the original set; the rest (added November 2026) cover every instrument of the collection with
+# its lowest, highest and two middle notes at ff, plus the lowest and highest at pp where available.
+# path	sha256	transposition	kind	flags
+MIS Pitches - 2014/Woodwinds/Eb Alto Saxophone/AltoSax.NoVib.ff.Db3.stereo.aif	22cf0a09d6ffef7988a3ce761fcf0b2e3f3d568e94fe9fa94aa291354546df83	9	STEADY	-
+MIS Pitches - 2014/Woodwinds/Eb Alto Saxophone/AltoSax.NoVib.ff.D3.stereo.aif	7b9701e53e0ef9c711542bdee1642e54778b3ac1e82294751ddc8c750d9eb69a	9	STEADY	octave-jump
+MIS Pitches - 2014/Woodwinds/Eb Alto Saxophone/AltoSax.NoVib.ff.C5.stereo.aif	0b4c5a57d75c1f35f5e5a30dd83a3af64629dc36e49e2f7531a95338cf3d2422	9	STEADY	-
+MIS Pitches - 2014/Woodwinds/Eb Alto Saxophone/AltoSax.vib.ff.F5.stereo.aif	137921200cb7ccfa656f96fc0119157ddc47624bf8c037f815c68c888dddcf8c	9	VIBRATO	-
+MIS Pitches - 2014/Strings/Double Bass/Bass.arco.ff.sulE.E1.stereo.aif	ca8c8d9ecf8ddbedc956c9b10cd12aaf3db0a5a366b86d3d974bd29c435f579c	12	STEADY	-
+MIS Pitches - 2014/Strings/Double Bass/Bass.arco.ff.sulC.C1.stereo.aif	4cb18629ead44ff8c1dabe0d39a5c1f4394b3e6058a17f5a3d0b9610cc0fbad2	12	STEADY	-
+MIS Pitches - 2014/Strings/Double Bass/Bass.arco.ff.sulA.A2.stereo.aif	a768b3bbe7c7110d798c9a6c8116db3ac5382d1e7ff76b2779a62444a9d33fa0	12	STEADY	-
+MIS Pitches - 2014/Strings/Double Bass/Bass.pizz.ff.sulE.E1.stereo.aif	e74ee4be31d4afa9b41ce0222af477cc320bede4373a269bc649009555ac6f7a	12	PLUCKED	-
+MIS Pitches - 2014/Strings/Double Bass/Bass.pizz.ff.sulA.A1.stereo.aif	178ad88c9c36823c6fca75df195405691abd714990b3226d3daa44e9e81ecf0a	12	PLUCKED	-
+MIS Pitches - 2014/Strings/Cello/Cello.arco.ff.sulC.C2.stereo.aif	56798a31bfb79a784baba213e9cffd9ad1565b8bc7f3ce08b557a82f432d6725	0	STEADY	-
+MIS Pitches - 2014/Strings/Cello/Cello.arco.ff.sulA.A3.stereo.aif	b697c7610dcd80c9958781909b5c7cca4c8850586e80a1c55e8b2892000c534c	0	STEADY	-
+MIS Pitches - 2014/Strings/Cello/Cello.arco.ff.sulA.A5.stereo.aif	bea6a39ea3596df086766d4c21e01250650d6e7855491638a4141c070e25140c	0	STEADY	-
+MIS Pitches - 2014/Strings/Cello/Cello.pizz.ff.sulG.G2.stereo.aif	b2948217098d0019a0c632e48f61e0f76b6ddade9b85653cb1e33adcb1e91cb0	0	PLUCKED	-
+MIS Pitches - 2014/Strings/Violin/Violin.arco.ff.sulG.G3.stereo.aif	57e40d4b85e9d9b57956a991e8a99eb769a6a1bbf160780819464e30e044186f	0	STEADY	-
+MIS Pitches - 2014/Strings/Violin/Violin.arco.ff.sulA.A4.stereo.aif	d6da87eedece3fd1d170fef8096c57fa37d0512bf17bcc0cad456e7fbbe8eea1	0	STEADY	-
+MIS Pitches - 2014/Strings/Violin/Violin.arco.ff.sulE.E6.stereo.aif	ccaa015ee819974445e20a594e0ec0d2d0c7f7f99154ab2787722072d6a64c08	0	STEADY	-
+MIS Pitches - 2014/Strings/Violin/Violin.arco.ff.sulE.E7.stereo.aif	3c4f5a9050e223e0fa71876e4e1bb4ce64851a6558328c21d4a532f853b53225	0	STEADY	-
+MIS Pitches - 2014/Strings/Violin/Violin.pizz.ff.sulA.A4.stereo.aif	90c8e8e34283159890078a7da884102173a3675c07ba2cade0e17dfd0562713f	0	PLUCKED	-
+MIS Pitches - 2014/Woodwinds/Flute/Flute.nonvib.ff.C4.stereo.aif	0ac77e304c0c9e86fb823d6d04bf13596d4900f8a36f705c4cb5bf87cb72eab7	0	STEADY	-
+MIS Pitches - 2014/Woodwinds/Flute/Flute.vib.ff.A5.stereo.aif	ab0e368340d04292f376f5bb98343083f84fea8879c2d67b33c9df1f9af1dfa8	0	VIBRATO	-
+MIS Pitches - 2014/Woodwinds/Flute/Flute.nonvib.ff.C7.stereo.aif	6a1214878f84fb68f721e93aab93f1a1eb1fdc7589db5b45b99a19586d91268b	0	STEADY	-
+MIS Pitches - 2014/Woodwinds/Bb Clarinet/BbClarinet.ff.D3.stereo.aif	4e33ff78b776366293dd285305d95336af7f469df9a4a71edd533db642b2be2f	2	STEADY	-
+MIS Pitches - 2014/Woodwinds/Bb Clarinet//BbClarinet.ff.C5.stereo.aif	65c379f07991cd18a6b8ce7cd8ea8ee37e161edef7c03a4605e9c3b85798b271	2	STEADY	-
+MIS Pitches - 2014/Woodwinds/Bb Clarinet//BbClarinet.ff.Bb6.stereo.aif	343a343b89c1801cf40c4c58b076203213830a3e50ba6f0d47e7a8b56897a01e	2	STEADY	-
+MIS Pitches - 2014/Brass/BbTrumpet/Trumpet.novib.ff.E3.stereo.aif	563f2926003ac26b97762e440a55e5a8bcea321a7007be804b842aa3b6f56444	2	STEADY	-
+MIS Pitches - 2014/Brass/BbTrumpet/Trumpet.vib.ff.Bb4.stereo.aif	f04cf7cf174d3b26240fd57bd5d7bd81df1bd15ad38ed1930e68c42a24a8c685	2	VIBRATO	-
+MIS Pitches - 2014/Brass/BbTrumpet/Trumpet.novib.ff.D6.stereo.aif	e0cb33ebc9e1a540f5787ba2b4f89b27c28d3711eb25419a7198150c1182599d	2	STEADY	-
+MIS Pitches - 2014/Brass/Horn/Horn.ff.Bb1.stereo.aif	ee8ef3115ca7b3e3accb6eb2b07bee071f2c5a9da923eff22376b3e46e7be3eb	7	STEADY	-
+MIS Pitches - 2014/Brass/Horn/Horn.ff.F3.stereo.aif	38ecc7c44c974b8c8fa704f3a4faec8fa5b6cd6ea6bac6d015a2fa84052ee145	7	STEADY	-
+MIS Pitches - 2014/Brass/Horn/Horn.ff.F5.stereo.aif	b07ebf7906973e36998d7e3bddad72d8c0c9ad00855c2e779ff4575961a6378b	7	STEADY	-
+MIS Pitches - 2014/Brass/Tenor Trombone/TenorTrombone.ff.E2.stereo.aif	23a6d61c3dd85ff44efc431a93a835bed59f46cd5d99dfcb3508254ad04cdc1d	0	STEADY	-
+MIS Pitches - 2014/Brass/Tenor Trombone/TenorTrombone.ff.Bb3.stereo.aif	6fd60183201dd769467b513727643c7fc05c8326a87788ac35a27744043cdcd8	0	STEADY	-
+MIS Pitches - 2014/Brass/Tenor Trombone/TenorTrombone.ff.C5.stereo.aif	12230c4c3273f81a5f52f6c73ffe9727c7f7b7fdd14ba99c6ee5ed980255bce0	0	STEADY	-
+MIS Pitches - 2014/Brass/Tuba/Tuba.ff.D1.stereo.aif	73ce4b778fa78b9238039e864736f0e8822a6954f41125db3527caa335ca917f	0	STEADY	-
+MIS Pitches - 2014/Brass/Tuba/Tuba.ff.F2.stereo.aif	3f23cc03594ea47227b1b27db0dc6cd4f6c874e50e0828abb74cc2fc582d9ab1	0	STEADY	-
+MIS Pitches - 2014/Brass/Tuba/Tuba.ff.Bb3.stereo.aif	4ec60e48bc6df83dcc050d80194669212c8a1afbb71c74fd9f85424b3c507979	0	STEADY	-
+MIS Pitches - 2014/Woodwinds/Bassoon/Bassoon.ff.Bb1.stereo.aif	dac6ffa4432dee663b49662cd7d1812d5a150f0cb9d7469906b3370f2489f8e9	0	STEADY	-
+MIS Pitches - 2014/Woodwinds/Bassoon/Bassoon.ff.F3.stereo.aif	2037527ad7dbb10f40cc5e298c32bf0b7782557f54924472fe0ad4a4feb8ebcc	0	STEADY	-
+MIS Pitches - 2014/Woodwinds/Bassoon/Bassoon.ff.D5.stereo.aif	594d5be5450899730acbfa5ffb7c850b8d312cc0d3b66758041ac89980f50e03	0	STEADY	-
+MIS Pitches - 2014/Woodwinds/Oboe/Oboe.ff.Bb3.stereo.aif	0c6380976976d261c678cc170700052b69e008d2bc0137a8eaec47f9b3c0363a	0	STEADY	-
+MIS Pitches - 2014/Woodwinds/Oboe/Oboe.ff.A4.stereo.aif	249c57f5f17e9f7c7694afafce848c78bbe77f065cc0e4681918f3d19fc306b7	0	STEADY	-
+MIS Pitches - 2014/Woodwinds/Oboe/Oboe.ff.G6.stereo.aif	e9ba18b8dedbc2967e7d66beef0c59e00eb55a79f58884878182ea2605348488	0	STEADY	-
+MIS Pitches - 2014/Woodwinds/Bb Clarinet//BbClarinet.ff.Eb3.stereo.aif	bc91d59c1adff2eed6220957cc3cad0bfde28a73196553f1ee7d9ef9a0de3ff8	2	STEADY	-
+MIS Pitches - 2014/Woodwinds/Bb Clarinet//BbClarinet.ff.F4.stereo.aif	eb3534cf47c2ee9ee4124f6917be7b52a6209efa98e3dda869ba02181416be1f	2	STEADY	-
+MIS Pitches - 2014/Woodwinds/Bb Clarinet//BbClarinet.ff.Ab5.stereo.aif	5db78b7ea6e753c141aff9e34482e8d242b05761725fb3d615cfe8b477b34106	2	STEADY	-
+MIS Pitches - 2014/Woodwinds/Bb Clarinet//BbClarinet.ff.B6.stereo.aif	7154c1421b7699db2785bb668f6fb798eab2bece3a3c31a3bb45c795f86a7a03	2	STEADY	-
+MIS Pitches - 2014/Woodwinds/Alto Flute/AltoFlute.vib.ff.G3.stereo.aif	547cbd1edb9ad153ed9bccb968e6ece06446484484d112b6d9fadc1df763c906	5	VIBRATO	-
+MIS Pitches - 2014/Woodwinds/Alto Flute/AltoFlute.vib.ff.G4.stereo.aif	fe8b41db8d0f8bc3aff704890961baf2e051f1de37f4a6c9ac17fd5661fba568	5	VIBRATO	-
+MIS Pitches - 2014/Woodwinds/Alto Flute/AltoFlute.vib.ff.G5.stereo.aif	54d9c56834ed4f1eb0453fc4412fb921e4868e1f361a5800164531c8f6593875	5	VIBRATO	-
+MIS Pitches - 2014/Woodwinds/Alto Flute/AltoFlute.vib.ff.G6.stereo.aif	52dab17c00fc53fbec335f09852eed2bdecdbcc3d2c504560949218f8fd57f6a	5	VIBRATO	-
+MIS Pitches - 2014/Woodwinds/Bass Clarinet/BassClarinet.ff.Db2.stereo.aif	7ae72a76853431f7e893ab1ea39c4f23f77bfb6ea253210abc4b0a4237c629a5	14	STEADY	-
+MIS Pitches - 2014/Woodwinds/Bass Clarinet/BassClarinet.ff.E3.stereo.aif	81fd961530f69aaace517e05f5444b4a18939c244a6080229be1c254eea6d112	14	STEADY	-
+MIS Pitches - 2014/Woodwinds/Bass Clarinet/BassClarinet.ff.G4.stereo.aif	ab60699e55b3d7e8786fbbc506369758397f5194a38a35c1ed73bc3c8f6a5d9a	14	STEADY	-
+MIS Pitches - 2014/Woodwinds/Bass Clarinet/BassClarinet.ff.Bb5.stereo.aif	4667afb57666fb7f358e08bbdc3c76ce3f4fec21912fda70139b6fbb447ea457	14	STEADY	-
+MIS Pitches - 2014/Woodwinds/Bass Flute/BassFlute.ff.C3.stereo.aif	350ca1484527f88009a4b54bc41d0d8cf8c3885f7db63353a218c663b6e53ec5	12	STEADY	-
+MIS Pitches - 2014/Woodwinds/Bass Flute/BassFlute.ff.C4.stereo.aif	8138d2f1b004bb34c424a2bbbe6d8728c4d86852a5fdf9e5978ba7504d2036be	12	STEADY	-
+MIS Pitches - 2014/Woodwinds/Bass Flute/BassFlute.ff.Db5.stereo.aif	794a4d0251af1a84fff3bcd387e0d717dee8d8fbf25fedac16b1903694037d7e	12	STEADY	-
+MIS Pitches - 2014/Woodwinds/Bass Flute/BassFlute.ff.Db6.stereo.aif	50ca2379495ffcf9b69a0385143e4ede30e8fd2f1311a32558e5605341e491ad	12	STEADY	-
+MIS Pitches - 2014/Brass/Bass Trombone/BassTrombone.ff.Db1.stereo.aif	0cb80c4fe3f07ff2847f8bedb8bec1c67c720640760491c19c9b6655d5a33e4f	0	STEADY	known-failure
+MIS Pitches - 2014/Brass/Bass Trombone/BassTrombone.ff.Bb1.stereo.aif	0350ff8788d4d7f151704c94b23fdce9ff2581a7992e4af58e87b9722e54119b	0	STEADY	known-failure
+MIS Pitches - 2014/Brass/Bass Trombone/BassTrombone.ff.G2.stereo.aif	3a007002e2165508e12dc6ea0bce9ea63db9517155c357a9d79240eaab55b5f8	0	STEADY	known-failure
+MIS Pitches - 2014/Brass/Bass Trombone/BassTrombone.ff.Eb3.stereo.aif	90bd6650261d23023ac366f0e1d2d9f31bba0c67f6731e560053c94861d71697	0	STEADY	-
+MIS Pitches - 2014/Woodwinds/Bassoon/Bassoon.ff.B1.stereo.aif	5a3c1b7c1b2d78eb9b3da4d34384338d2bd2c9da5b105c18843f2b8ecca579de	0	STEADY	-
+MIS Pitches - 2014/Woodwinds/Bassoon/Bassoon.ff.B2.stereo.aif	0cfe9062184689c1d29e627fcec9e77221e461b015ca635b0dc86092697f6392	0	STEADY	-
+MIS Pitches - 2014/Woodwinds/Bassoon/Bassoon.ff.Db4.stereo.aif	0bae1390dd60a929a1af7b35772606c1412e0f4d1d2cb4eac1f28ec38802f591	0	STEADY	-
+MIS Pitches - 2014/Woodwinds/Bassoon/Bassoon.ff.Db5.stereo.aif	09067eaa343f3763dffad9bd9f824c41c724d6a8e1c7de9eb0158d05c5184cff	0	STEADY	-
+MIS Pitches - 2014/Woodwinds/Bb Soprano Saxophone/SopSax.nonvib.ff.Ab3.stereo.aif	2088aee0a4f4ad94bbbb1f7fbb76a445a47556dcf68e54f9b6e5415c6e058d6f	2	STEADY	-
+MIS Pitches - 2014/Woodwinds/Bb Soprano Saxophone/SopSax.nonvib.ff.Gb4.stereo.aif	bcf844e3efa6e36a3baf9759d06ec76aa3245b4ce39af701f9f14d02b2ece396	2	STEADY	-
+MIS Pitches - 2014/Woodwinds/Bb Soprano Saxophone/SopSax.nonvib.ff.F5.stereo.aif	f72cb8368f46551a21549f2e593d4e6274549da5791e5663653d61029e9d96c5	2	STEADY	-
+MIS Pitches - 2014/Woodwinds/Bb Soprano Saxophone/SopSax.nonvib.ff.E6.stereo.aif	c9c97ea4fbca1df7e1028a07270696056cb772761870404ef9406b1c257ac18f	2	STEADY	-
+MIS Pitches - 2014/Woodwinds/Bb Soprano Saxophone/SopSax.vib.ff.Ab3.stereo.aif	bd07c977cd9d93849df6981cb73a3c4d9c8c6ec7e5fc9a98d130d9c7347ccb05	2	VIBRATO	-
+MIS Pitches - 2014/Woodwinds/Bb Soprano Saxophone/SopSax.vib.ff.Gb4.stereo.aif	b5f56eb389921814b2a776755d875e10abc3e69c86e63a2d26f2ea5d808ccdfc	2	VIBRATO	-
+MIS Pitches - 2014/Woodwinds/Bb Soprano Saxophone/SopSax.vib.ff.F5.stereo.aif	4290ef6fa9e96dd47be0b4d32ff97250f60facd47c37d69a4ab7c560ef3fcedd	2	VIBRATO	-
+MIS Pitches - 2014/Woodwinds/Bb Soprano Saxophone/SopSax.vib.ff.E6.stereo.aif	e8a8b1a745ebae205acc47a766f9335764416725e35d5e8ad30e59fd9387aad3	2	VIBRATO	-
+MIS Pitches - 2014/Brass/BbTrumpet/Trumpet.novib.ff.F3.stereo.aif	d622fed268ef2ff4d4dcec245b15289e5b2099399039a47de044f76beebba0af	2	STEADY	-
+MIS Pitches - 2014/Brass/BbTrumpet/Trumpet.novib.ff.E4.stereo.aif	0071a8b7ff18acae688007a24005c35b0126a2a0f6bbf1ffba17f460cc6f0b85	2	STEADY	-
+MIS Pitches - 2014/Brass/BbTrumpet/Trumpet.novib.ff.Eb5.stereo.aif	f597a67e20c46ae5dafe8b6c074f3442a9c120ba35ad845fa9f901afce0899cb	2	STEADY	-
+MIS Pitches - 2014/Brass/BbTrumpet/Trumpet.novib.ff.Eb6.stereo.aif	e2dd242e39d278c756ba7b7d0fb236eb39eea88c4a1876a18c65f29cf0ac1dbd	2	STEADY	-
+MIS Pitches - 2014/Brass/BbTrumpet/Trumpet.vib.ff.E3.stereo.aif	6439d2f96c72e0dc87f2dc5eb7c43cb1685c2c9d51a64075d606b3e5de7e4355	2	VIBRATO	-
+MIS Pitches - 2014/Brass/BbTrumpet/Trumpet.vib.ff.Eb4.stereo.aif	d805cc6c27bda6c810123308f2872699017b5124a1c9e2a3e40d0324ef0f5847	2	VIBRATO	-
+MIS Pitches - 2014/Brass/BbTrumpet/Trumpet.vib.ff.Eb5.stereo.aif	90f7485ea821761e555af47f626cdda59933f7dd553c1730f05fc3cccc7ed35c	2	VIBRATO	-
+MIS Pitches - 2014/Brass/BbTrumpet/Trumpet.vib.ff.D6.stereo.aif	ffcf7f9ead05e11e9b495aeadac0b3678ae1965ce5f65676f27aa8d4dd4d03f9	2	VIBRATO	-
+MIS Pitches - 2014/Percussion/Bells/bells.brass.ff.C5.stereo.aif	f786cd8ccdfa660005baee82be33d599908e65c4d26378b2493765dfe48db3e9	-24	PLUCKED	-
+MIS Pitches - 2014/Percussion/Bells/bells.brass.ff.C6.stereo.aif	1aaee98d0b2464dc6858d788e9e57312b61d75dcf17bf51a590bfdda2e21c9a7	-24	PLUCKED	-
+MIS Pitches - 2014/Percussion/Bells/bells.plastic.ff.C7.stereo.aif	52ab1a74604ad9c6e1c9eb8f6853881a90f1ba2c4f183277c61d508693791435	-24	PLUCKED	-
+MIS Pitches - 2014/Percussion/Bells/bells.plastic.ff.C8.stereo.aif	c7359ee35931705e5f79d1ba52b5046765d3904b68c4631e93cdca933e32dc79	-24	PLUCKED	-
+MIS Pitches - 2014/Strings/Cello/Cello.arco.ff.sulC.Db2.stereo.aif	6c2f017f8c9adee866788045bf4e31cd35cec9ede87d9a960e0a8514f99b6119	0	STEADY	-
+MIS Pitches - 2014/Strings/Cello/Cello.arco.ff.sulD.F3.stereo.aif	7bdc24dcf046964b3c5eb3914ebef7ac6df020b6f9f54bb75058bdea9575e6ec	0	STEADY	-
+MIS Pitches - 2014/Strings/Cello/Cello.arco.ff.sulG.D4.stereo.aif	8bb0dab55bb5f0a3cf602659008757a23c7238b21c88b8499b87af07a6b2a054	0	STEADY	-
+MIS Pitches - 2014/Strings/Cello/Cello.arco.ff.sulA.Ab5.stereo.aif	7de4458ee6ab03b8ccf16bb6119feebab49f6adaa5dd568d132a430b026a23fb	0	STEADY	-
+MIS Pitches - 2014/Strings/Cello/Cello.pizz.ff.sulC.C2.stereo.aif	5424133b9a1ca4143cb84c833c00bd236498934eb94ed4e204b9f6f69738c51e	0	PLUCKED	known-failure
+MIS Pitches - 2014/Strings/Cello/Cello.pizz.ff.sulC.Gb3.stereo.aif	6c540f3a6032ff257a8da15f1c6f9e18d69aae196818bbbb19bea47d76870a75	0	PLUCKED	-
+MIS Pitches - 2014/Strings/Cello/Cello.pizz.ff.sulD.Eb4.stereo.aif	51e7972687bbe4a07320fecd547c2c446cf06c31f4d236dbe528b30d0b9b010d	0	PLUCKED	-
+MIS Pitches - 2014/Strings/Cello/Cello.pizz.ff.sulA.A5.stereo.aif	e808ad8d5d7b68cd8bdb82e8f1d0f8dcaeea49ddfc4b599098fc4ad58353e488	0	PLUCKED	-
+MIS Pitches - 2014/Percussion/Crotales/Crotale.ff.C6.stereo.aif	646835b108d5b0023075b0c1edb108e0b86f84392ba914d446c7e632866ee032	-24	PLUCKED	known-failure
+MIS Pitches - 2014/Percussion/Crotales/Crotale.ff.Ab6.stereo.aif	80b133bb83b9a01f5263dd87a92017b1a8818cbca0dece8305a7d149d504eec8	-24	PLUCKED	known-failure
+MIS Pitches - 2014/Percussion/Crotales/Crotale.ff.E7.stereo.aif	b7f4aec073f7358a09a60781fc438e12d82b1f50ebf592f1936818e47bdf7113	-24	PLUCKED	-
+MIS Pitches - 2014/Percussion/Crotales/Crotale.ff.C8.stereo.aif	69fed885bae880541ed0bf22a061deae512cdbc8c725f8238297a0c6b91543f3	-24	PLUCKED	-
+MIS Pitches - 2014/Strings/Double Bass/Bass.arco.ff.sulC.Db1.stereo.aif	b7396a06fd232cb0e2e0066846600a6fa048b6dbcbb6882c2cab8942bedec45b	12	STEADY	-
+MIS Pitches - 2014/Strings/Double Bass/Bass.arco.ff.sulA.G2.stereo.aif	7876dff3919ac0f4911a58e66e57782807440313d89bb7da6a165c22d77acf83	12	STEADY	-
+MIS Pitches - 2014/Strings/Double Bass/Bass.arco.ff.sulA.E3.stereo.aif	29cbaedea63c2f59d10e129e644b6ca6713c9426a2f0e784f5047c327059bf98	12	STEADY	-
+MIS Pitches - 2014/Strings/Double Bass/Bass.arco.ff.sulG.G4.stereo.aif	ff981bc17a675bdbdd75776757685035180c5750e4e63f6e8333beb750316144	12	STEADY	-
+MIS Pitches - 2014/Strings/Double Bass/Bass.pizz.ff.sulC.C1.stereo.aif	42b0ce57ad0a551595e2bfb253f9b67c04458babd1e0935652383adf277f9258	12	PLUCKED	known-failure
+MIS Pitches - 2014/Strings/Double Bass/Bass.pizz.ff.sulE.G2.stereo.aif	cfb733474ac88bbc4c0d3fa721c6d146c87a53d5acdaf1d6f61b585f2ee5aea0	12	PLUCKED	-
+MIS Pitches - 2014/Strings/Double Bass/Bass.pizz.ff.sulA.E3.stereo.aif	003a87de27ba7251213833c3d59ec8d22b97613dd22bcca218c16fa4445b1a62	12	PLUCKED	-
+MIS Pitches - 2014/Woodwinds/Eb Alto Saxophone/AltoSax.NoVib.ff.Eb3.stereo.aif	070ba390375393b5b9e69ed7d2bc523c85203c05b075d9fae5bdabfe0e64cc88	9	STEADY	-
+MIS Pitches - 2014/Woodwinds/Eb Alto Saxophone/AltoSax.NoVib.ff.C4.stereo.aif	b3620d42e19f23603308c9bbb95b4e9faaf31d169edfdf4fa21b0eb8c21c51de	9	STEADY	-
+MIS Pitches - 2014/Woodwinds/Eb Alto Saxophone/AltoSax.NoVib.ff.Bb4.stereo.aif	ee22d84e8ad9412ccbd7a6e689672ee188472ad89fae53a760db1517c126e6f8	9	STEADY	-
+MIS Pitches - 2014/Woodwinds/Eb Alto Saxophone/AltoSax.NoVib.ff.Ab5.stereo.aif	0cac729beb93fee3190b9708c3d66682c542dcf5d40c8fee59eb8664dbc6c0b9	9	STEADY	-
+MIS Pitches - 2014/Woodwinds/Eb Alto Saxophone/AltoSax.vib.ff.Db3.stereo.aif	c453a75506ac4755807f390989ac093c3620188312cb21c3d532a55065c11bcd	9	VIBRATO	-
+MIS Pitches - 2014/Woodwinds/Eb Alto Saxophone/AltoSax.vib.ff.B3.stereo.aif	cfbf398a51902c0d8c2123efe63137d9047e7935775121d3421d19f08f88ce6d	9	VIBRATO	-
+MIS Pitches - 2014/Woodwinds/Eb Alto Saxophone/AltoSax.vib.ff.A4.stereo.aif	a35b8c43f8b4d23e35938321861078e685e6cac78f97e9ca7befed04dc7d6216	9	VIBRATO	-
+MIS Pitches - 2014/Woodwinds/Eb Alto Saxophone/AltoSax.vib.ff.Ab5.stereo.aif	3d6ed1d703e25fcc95d1aad7e7d0a8265efe9b4441df05a39f65ac44e81bf6c3	9	VIBRATO	-
+MIS Pitches - 2014/Woodwinds/Eb Clarinet/EbClarinet.ff.G3.stereo.aif	6a3ea49650bb1faa91b74ed02f96ef1dbe4324be2adf9365a246e8f9c5af54c3	-3	STEADY	-
+MIS Pitches - 2014/Woodwinds/Eb Clarinet/EbClarinet.ff.Ab4.stereo.aif	6c1e04b2bc18125ef3d5f54c10c6ed1018b07de2eb73f8650502022fbe95a2af	-3	STEADY	-
+MIS Pitches - 2014/Woodwinds/Eb Clarinet/EbClarinet.ff.A5.stereo.aif	41b94feeeb6b269ac69976471ac6bfc6e4aee111c62f0a2d8fd3481ca907f1f8	-3	STEADY	-
+MIS Pitches - 2014/Woodwinds/Eb Clarinet/EbClarinet.ff.A6.stereo.aif	0a35b6d40577c3478f9b6c909b3c9ca0346e5b250d5dc4f6162a8fa778f859ea	-3	STEADY	-
+MIS Pitches - 2014/Woodwinds/Flute/Flute.nonvib.ff.B3.stereo.aif	169245b81684854a554e933ca36034e7013687468179a7ed92c07e9ddc4922ae	0	STEADY	-
+MIS Pitches - 2014/Woodwinds/Flute/Flute.nonvib.ff.C5.stereo.aif	b2d28d713dd35f73392055f272bd64de64cc01ac8fec902a0ea60a6495682336	0	STEADY	-
+MIS Pitches - 2014/Woodwinds/Flute/Flute.nonvib.ff.C6.stereo.aif	539ce65d28705f2d7ac9df3f14350ecd6129d30c45fbf24f4b4eece59f5df041	0	STEADY	-
+MIS Pitches - 2014/Woodwinds/Flute/Flute.nonvib.ff.Db7.stereo.aif	7a415abb82265c4ca30117cd5436e2c5ea4f86f88861e15a30d3237ac402003e	0	STEADY	-
+MIS Pitches - 2014/Woodwinds/Flute/Flute.vib.ff.B3.stereo.aif	93ce10bde757c978f01ed2f64df3e8e3d3d208ba9aa47f3be1d5f712a5cbfda1	0	VIBRATO	-
+MIS Pitches - 2014/Woodwinds/Flute/Flute.vib.ff.B4.stereo.aif	17d3892e58e88c7483832cf30f43f56ce51e287430ca956a704b5a3dc09c873b	0	VIBRATO	-
+MIS Pitches - 2014/Woodwinds/Flute/Flute.vib.ff.C6.stereo.aif	c1b00c7254349b8d7040048089f07f83b8681337956d8337e39aab1795ae5359	0	VIBRATO	-
+MIS Pitches - 2014/Woodwinds/Flute/Flute.vib.ff.Db7.stereo.aif	042e19e8eb64bc154793ddc883247940b85359e6f8c601185858411dbdd8e4fd	0	VIBRATO	-
+MIS Pitches - 2014/Brass/Horn/Horn.ff.B1.stereo.aif	fb6fd034ce9b8ea3392e940c368afbc1ccfb3f870b13c49935d4f98d91f18eda	7	STEADY	-
+MIS Pitches - 2014/Brass/Horn/Horn.ff.C3.stereo.aif	f379032972ea99a6dc828a2ec0685012ccaf07f945b6282a70588b64dbf8f2ce	7	STEADY	-
+MIS Pitches - 2014/Brass/Horn/Horn.ff.Eb4.stereo.aif	0e21099278a974fb40a22bb9e2ddd15cccf3fb74c0c98e4777902d610d16402d	7	STEADY	-
+MIS Pitches - 2014/Brass/Horn/Horn.ff.E5.stereo.aif	203c77a513006a61ee84abada1116f05008b96da59767215b911ac385061b330	7	STEADY	-
+MIS Pitches - 2014/Percussion/Marimba/Marimba.cord.ff.C2.stereo.aif	a16accc74dbe296b0367e5ddb43d0c64687c20a0974a448a3a02695f03b7b490	0	PLUCKED	-
+MIS Pitches - 2014/Percussion/Marimba/Marimba.deadstroke.ff.Ab3.stereo.aif	3ebc5885e11173f4266ac6ba1f8f2102fbd7775391a48708ac0cb43019ac8964	0	PLUCKED	-
+MIS Pitches - 2014/Percussion/Marimba/Marimba.yarn.ff.E5.stereo.aif	18a903f00981706b66e718f763505071547f5928ec011067a58416f08de59af2	0	PLUCKED	-
+MIS Pitches - 2014/Percussion/Marimba/Marimba.yarn.ff.C7.stereo.aif	02efb06d63de3b9d6dd9fdd9eee89f7a56a406fcc1a11e330edd53de554b8bdd	0	PLUCKED	-
+MIS Pitches - 2014/Woodwinds/Oboe/Oboe.ff.B3.stereo.aif	c0625c1d6bbb46be5694d369c86eda7040c152ff1a649fa1fc8e2ef9b14d5007	0	STEADY	-
+MIS Pitches - 2014/Woodwinds/Oboe/Oboe.ff.Bb4.stereo.aif	0f6e9d806fe8937928d1d14bec89e9e10914d0f327a08f5673237ff5ff352660	0	STEADY	-
+MIS Pitches - 2014/Woodwinds/Oboe/Oboe.ff.A5.stereo.aif	a68575b56952200b5fb5250e864b8af26078ec7d97b6b24cf3cb93118f392ef0	0	STEADY	-
+MIS Pitches - 2014/Woodwinds/Oboe/Oboe.ff.Ab6.stereo.aif	6eecb868c29c01638afed1e2da9e2a56956feddda91782d397fb0891b97c0bab	0	STEADY	-
+MIS Pitches - 2014/Brass/Tenor Trombone/TenorTrombone.ff.F2.stereo.aif	a39850914862f0397765a1145bbb5504bfcd4e39a7a06959d9272c4b07e051a8	0	STEADY	-
+MIS Pitches - 2014/Brass/Tenor Trombone/TenorTrombone.ff.Eb3.stereo.aif	8f0e53d14c0d97e8bea4a52a848c7bba77a93e32cf8a5bd95397bcdfb58699ee	0	STEADY	-
+MIS Pitches - 2014/Brass/Tenor Trombone/TenorTrombone.ff.D4.stereo.aif	b68e77adaadb8c2832d330ac756a8bdb540f05f9a4524db79b6e85278c5a604b	0	STEADY	-
+MIS Pitches - 2014/Brass/Tenor Trombone/TenorTrombone.ff.B4.stereo.aif	fd8b01cfb7a18a221d71a8e6564601c3ba7c3769c596329f672430b33b4dff50	0	STEADY	-
+MIS Pitches - 2014/Brass/Tuba/Tuba.ff.C1.stereo.aif	2e8a1352fa5b2da8da56250081437dbcf482c527845b24d7161daa4c4ff649ce	0	STEADY	-
+MIS Pitches - 2014/Brass/Tuba/Tuba.ff.C2.stereo.aif	af51c37abab6866c1ada54b1de776c8169e5868fbdfe2aece7b222b8444d144f	0	STEADY	-
+MIS Pitches - 2014/Brass/Tuba/Tuba.ff.C3.stereo.aif	c8128c624dd162b6cbd51d8ceda62d8f72003c13c85dae0fe57f64f8dbe926dc	0	STEADY	-
+MIS Pitches - 2014/Brass/Tuba/Tuba.ff.C4.stereo.aif	847adc8f648f3725aaf6b911bda353a3cbefc5876069475f44d2f694485c031b	0	STEADY	-
+MIS Pitches - 2014/Percussion/Vibraphone/Vibraphone.bow.C3.stereo.aif	1aee5ce4df98796d8b180e4c6aeeb5927d57cf18c1d1b8d87b3f17bd38bdda56	0	PLUCKED	-
+MIS Pitches - 2014/Percussion/Vibraphone/Vibraphone.bow.D4.stereo.aif	64c38abb8867c9b7968b7af0c42954f731f30c318ebbbeb739111820ea016090	0	PLUCKED	-
+MIS Pitches - 2014/Percussion/Vibraphone/Vibraphone.bow.E5.stereo.aif	1b777e9db90945519b122a692385e868a14bf311edf6d43efb31c01106861772	0	PLUCKED	-
+MIS Pitches - 2014/Percussion/Vibraphone/Vibraphone.sustain.ff.F6.stereo.aif	f3ce9cc291bfa4b5361684f2d0175a29bddfd7e8f24c0a0d308c7564810a37db	0	PLUCKED	-
+MIS Pitches - 2014/Strings/Viola/Viola.arco.ff.sulC.C3.stereo.aif	c3c3cf1433dba22757b4490a9c89c78629c81c8ef57f7f8cfe665654cc6695da	0	STEADY	-
+MIS Pitches - 2014/Strings/Viola/Viola.arco.ff.sulC.Gb4.stereo.aif	bf50bbe33de8364c07c050a9a5179549aed74825554f0efe4ed96d68bb96cfd0	0	STEADY	-
+MIS Pitches - 2014/Strings/Viola/Viola.arco.ff.sulG.Eb5.stereo.aif	8f6666fd2ea9f7cc3e4455b11d3f84d56710ff7438c868a6f739a9636d4f8e8a	0	STEADY	-
+MIS Pitches - 2014/Strings/Viola/Viola.arco.ff.sulA.A6.stereo.aif	14648abcd93038410c069e8362638cdfbcecfb3528c625163c235b1cc0825e2e	0	STEADY	-
+MIS Pitches - 2014/Strings/Viola/Viola.pizz.ff.sulC.C3.stereo.aif	33dbe02e98ef0dbb7dc3fd3fadd990b9ae347194abbe6964318ae5e5082e787f	0	PLUCKED	-
+MIS Pitches - 2014/Strings/Viola/Viola.pizz.ff.sulC.Gb4.stereo.aif	3b0b7155ed11655d73fd9f86a9209d90dd43438e88f135590d5ffd5b4b8b8131	0	PLUCKED	-
+MIS Pitches - 2014/Strings/Viola/Viola.pizz.ff.sulG.Eb5.stereo.aif	8770c650bba4a9dfea9a1cea98396e81d9182feff442e1fe68d4cce172031f99	0	PLUCKED	-
+MIS Pitches - 2014/Strings/Viola/Viola.pizz.ff.sulA.A6.stereo.aif	51b9ca173ecc5d33bd3dd3f39568aac53ed56776822d1695487b46abb8c0362e	0	PLUCKED	-
+MIS Pitches - 2014/Strings/Violin/Violin.arco.ff.sulG.Ab3.stereo.aif	47e14e17a4e3944eed7d397ae49f90a94909a1cacbd3639b242fba03bc7649b6	0	STEADY	-
+MIS Pitches - 2014/Strings/Violin/Violin.arco.ff.sulD.C5.stereo.aif	29fd34a64e9d295fbde4bcae2d22cd44737e8886c1e4dbd0282ff14ab8a19a04	0	STEADY	-
+MIS Pitches - 2014/Strings/Violin/Violin.arco.ff.sulE.Bb5.stereo.aif	974b9fc0073d2387cc95f64bf857960d9fd405da476b1c25164634f2ea9322a8	0	STEADY	-
+MIS Pitches - 2014/Strings/Violin/Violin.arco.ff.sulE.Eb7.stereo.aif	a1c9ec92195714c0466e60109dfc7509c0f3073a0b817401c97342da37bc46c4	0	STEADY	-
+MIS Pitches - 2014/Strings/Violin/Violin.pizz.ff.sulG.G3.stereo.aif	56a5a43db6a9333823cd96b016d02e9dac703ac3fcbb20510817ef1110dfb77f	0	PLUCKED	-
+MIS Pitches - 2014/Strings/Violin/Violin.pizz.ff.sulA.C5.stereo.aif	2def29674e1aa0d09c138dd864cd5fe37d9e693c2825b2262c729441e380c395	0	PLUCKED	-
+MIS Pitches - 2014/Strings/Violin/Violin.pizz.ff.sulA.Bb5.stereo.aif	de34b586d7d33fce71272db07c07a42f256329dd007e17d3d958aca7c68239d2	0	PLUCKED	-
+MIS Pitches - 2014/Strings/Violin/Violin.pizz.ff.sulE.E7.stereo.aif	a8a4e0a33754aaeacc1558ccbc17eee3549005e62b06173521a500aa28861f69	0	PLUCKED	-
+MIS Pitches - 2014/Percussion/Xylophone/Xylophone.hardrubber.ff.F4.stereo.aif	259c648162987375380b6e0f9dc61acc4548fb8e9394fb2441d3b8f252afe800	-12	PLUCKED	-
+MIS Pitches - 2014/Percussion/Xylophone/Xylophone.rosewood.ff.G5.stereo.aif	1100c93d243076a63aa0643ec8e89d5678c54802e74efedd6087d4a249b1dfab	-12	PLUCKED	-
+MIS Pitches - 2014/Percussion/Xylophone/Xylophone.hardrubber.ff.Bb6.stereo.aif	4e82a69fec7ff887cc21d351a54c1c90be5b69d4b6d09e7146a4946b4b317537	-12	PLUCKED	-
+MIS Pitches - 2014/Percussion/Xylophone/Xylophone.rosewood.ff.C8.stereo.aif	595529eccecabbe5288e38948846007e1415e4b784d6a806e33e676769c62260	-12	PLUCKED	-
+MIS/Piano_Other/piano/Piano.ff.B0.aiff	9fc019215076150d5ace3af5df72e37ff40957995a641f7a06a5cd39c142daa9	0	PLUCKED	known-failure
+MIS/Piano_Other/piano/Piano.ff.Eb3.aiff	9386b9743a60742db5edd3d2a0a24d4d6c4853a54cf3ddd079d851f04c645bba	0	PLUCKED	-
+MIS/Piano_Other/piano/Piano.ff.Ab5.aiff	995fb2d7676953a817b7004e078464d31cfb3477f595d9f6ee6fbabfdf7b5d39	0	PLUCKED	-
+MIS/Piano_Other/piano/Piano.ff.C8.aiff	1aef3a8d865749e0ef258628fc8881477bab970b0ee2f1aa3e37177a5a22ec75	0	PLUCKED	-
+MIS/Piano_Other/piano/Piano.pp.B0.aiff	3089ed5e1a1cf5f22363df0a81d78e7df0ab799de7393eab67e46fafbb6e1faf	0	PLUCKED	-
+MIS/Piano_Other/piano/Piano.pp.C8.aiff	7455c023a74f26e6feb71616b94253fc1cad98529b365aca791b41794589e942	0	PLUCKED	-

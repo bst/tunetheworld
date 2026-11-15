@@ -39,8 +39,14 @@ class PitchPipeline(
         filled = minOf(filled + length, window.size)
         if (filled < window.size) return null
 
-        if (rms(window, window.size - TunerConfig.HOP_SIZE, TunerConfig.HOP_SIZE) < dbToAmplitude(gateDb)) {
+        // Both ends of the window must be loud enough: at a note's start the window still holds the silence before it,
+        // and YIN would report nonsense for a few blocks
+        val gate = dbToAmplitude(gateDb)
+        val newest = rms(window, window.size - TunerConfig.HOP_SIZE, TunerConfig.HOP_SIZE)
+        val oldest = rms(window, 0, TunerConfig.HOP_SIZE)
+        if (newest < gate || oldest < gate) {
             smoother.reset()
+            detector.reset()
             return null
         }
         val result = detector.detect(window) ?: return null
@@ -51,6 +57,7 @@ class PitchPipeline(
     fun reset() {
         filled = 0
         smoother.reset()
+        detector.reset()
         levelDb = TunerConfig.METER_FLOOR_DB
     }
 }
