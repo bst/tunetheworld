@@ -1,19 +1,17 @@
 # Plan
 
-What comes next for Tune the World. Version 1 is feature-complete and tested on a real device (see [README.md](README.md#status)). It has since been generalized from a saxophone tuner to any instrument: 30–4200 Hz, any transposition from −24 to +26 semitones, checked against 175 recordings of 25 instruments (see the [research log](docs/research/RESEARCH_LOG.md)). The next work makes the project ready to publish as open source and keeps it working once other people send changes.
+What comes next for Tune the World. Version 1 is feature-complete (see [README.md](README.md#status)). It has since been generalized from a saxophone tuner to any instrument: 30–4200 Hz, any transposition from −24 to +26 semitones, checked against 175 recordings of 25 instruments (see the [research log](docs/research/RESEARCH_LOG.md)) and on a real device. The next work makes the project ready to publish as open source and keeps it working once other people send changes.
 
 ## Next steps
 
 In rough order:
 
-1. **Check the wider range on a real device.** The detector now searches 30–4200 Hz. With the FFT difference function one analysis takes about 240 µs on a desktop JVM, less than the old 90–1100 Hz loop. Confirm on the phone that CPU load and battery use are low.
-2. **Prepare for open source.**
-   - Choose a license and add a `LICENSE` file. It must be compatible with the "no GPL/LGPL libraries" rule; Apache-2.0 matches the dependencies.
+1. **Prepare for open source.**
    - Add a short `CONTRIBUTING.md`: how to build, enable the git hooks, run the tests, and the project constraints from the README.
-3. **Milestone: CI for pull requests.** See [below](#milestone-ci-for-pull-requests).
-4. **Release builds.** Turn on minification, set up a signing config with the key kept outside the repository, and decide on a distribution channel (GitHub Releases, F-Droid, Play Store).
+2. **Milestone: CI for pull requests.** See [below](#milestone-ci-for-pull-requests).
+3. **Release builds.** Decide on a distribution channel (GitHub Releases, F-Droid, Play Store). Before the first release, test the minified build on a real device: tuner, settings, and the microphone permission flow.
 
-Still out of scope for now: reference tone, more transpositions, strobe display, pitch history, landscape layout.
+Still out of scope for now: reference tone, strobe display, pitch history, landscape layout.
 
 ## Milestone: CI for pull requests
 

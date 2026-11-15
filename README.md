@@ -37,7 +37,7 @@ Version 1 is feature-complete and has been checked on the emulator and on a real
 
 Known gaps:
 
-- Release builds are not minified, and are signed with the debug key unless a release key is configured (see [Building](#building)).
+- Release builds are signed with the debug key unless a release key is configured (see [Building](#building)).
 
 Out of scope for now: playing a reference tone, strobe display, pitch history, and landscape layout.
 
@@ -126,6 +126,8 @@ tunetheworld.release.keyPassword=...
 
 Android only updates an installed app from an APK signed with the same key. When switching between keys, uninstall the app first.
 
+Release builds are shrunk and obfuscated with R8, and unused resources are removed. This takes the APK from about 9.7 MB to about 1.7 MB. Stack traces from a release build show shortened names. To read them, keep `app/build/outputs/mapping/release/mapping.txt` from the same build and run the trace through `retrace` from the Android SDK command-line tools. Unit tests run on the unshrunk code, so check a release build on a device before publishing it.
+
 Git hooks in `.githooks/` run these checks. Enable them once per clone with `git config core.hooksPath .githooks`.
 
 - **pre-commit** runs ktlint and Android lint. Lint treats warnings as errors. Warnings that already existed are listed in `app/lint-baseline.xml` and ignored.
@@ -171,3 +173,11 @@ The project follows these rules:
 - No GPL or LGPL libraries (in particular no TarsosDSP). Only Apache-2.0 AndroidX, Compose, Coroutines, DataStore and JUnit.
 - No NDK, C++ or Oboe. DSP code is plain Kotlin and unit-testable.
 - Code and comments are in English. All visible text lives in string resources and is kept up to date in both languages.
+
+## License
+
+Copyright 2026 Sebastian A. Scherer
+
+Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for the full text.
+
+The instrument recordings used by the tests are not part of this repository and are not covered by this license (see [Tests](#tests)).
