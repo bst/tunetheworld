@@ -94,7 +94,7 @@ android {
         // Warnings that existed when warningsAsErrors was switched on; new ones fail the build
         baseline = file("lint-baseline.xml")
         // These depend on what was released upstream today, not on the code, so they would break builds at random.
-        // Dependency updates are handled separately (see PLAN.md).
+        // Dependabot handles dependency updates instead (see .github/dependabot.yml).
         disable += setOf("AndroidGradlePluginVersion", "GradleDependency", "NewerVersionAvailable")
     }
 }

@@ -6,7 +6,6 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import io.github.bst.tunetheworld.engine.TunerConfig
 import io.github.bst.tunetheworld.music.Transposition
@@ -21,11 +20,7 @@ class SettingsRepository(private val store: DataStore<Preferences>) {
     val settings: Flow<TunerSettings> = store.data.map { prefs ->
         TunerSettings(
             referenceHz = (prefs[REFERENCE_HZ] ?: DEFAULT_REFERENCE_HZ).coerceIn(MIN_REFERENCE_HZ, MAX_REFERENCE_HZ),
-            transposition = Transposition.clamp(
-                prefs[TRANSPOSITION]
-                    ?: prefs[LEGACY_MODE]?.let { LEGACY_MODES[it] }
-                    ?: Transposition.CONCERT
-            ),
+            transposition = Transposition.clamp(prefs[TRANSPOSITION] ?: Transposition.CONCERT),
             gateDb = (prefs[GATE_DB] ?: TunerConfig.DEFAULT_GATE_DB)
                 .coerceIn(TunerConfig.MIN_GATE_DB, TunerConfig.MAX_GATE_DB)
         )
@@ -36,10 +31,7 @@ class SettingsRepository(private val store: DataStore<Preferences>) {
     }
 
     suspend fun setTransposition(semitones: Int) {
-        store.edit {
-            it[TRANSPOSITION] = Transposition.clamp(semitones)
-            it.remove(LEGACY_MODE)
-        }
+        store.edit { it[TRANSPOSITION] = Transposition.clamp(semitones) }
     }
 
     suspend fun setGateDb(db: Float) {
@@ -53,9 +45,5 @@ class SettingsRepository(private val store: DataStore<Preferences>) {
         private val REFERENCE_HZ = intPreferencesKey("reference_hz")
         private val GATE_DB = floatPreferencesKey("gate_db")
         private val TRANSPOSITION = intPreferencesKey("transposition_semitones")
-
-        // Version 1 stored one of three fixed modes by name; read once so existing choices survive the update
-        private val LEGACY_MODE = stringPreferencesKey("transposition")
-        private val LEGACY_MODES = mapOf("TENOR_BB" to 14, "ALTO_EB" to 9, "CONCERT" to 0)
     }
 }

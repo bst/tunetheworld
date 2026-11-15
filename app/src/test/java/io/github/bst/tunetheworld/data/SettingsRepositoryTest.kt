@@ -1,8 +1,6 @@
 package io.github.bst.tunetheworld.data
 
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
 import io.github.bst.tunetheworld.music.Transposition
 import java.io.File
 import kotlinx.coroutines.CoroutineScope
@@ -63,21 +61,5 @@ class SettingsRepositoryTest {
         assertEquals(Transposition.MAX, repo.settings.first().transposition)
         repo.setTransposition(-40)
         assertEquals(Transposition.MIN, repo.settings.first().transposition)
-    }
-
-    @Test
-    fun migratesVersion1Modes() = runBlocking {
-        store.edit { it[stringPreferencesKey("transposition")] = "TENOR_BB" }
-        assertEquals(14, repo.settings.first().transposition)
-        store.edit { it[stringPreferencesKey("transposition")] = "ALTO_EB" }
-        assertEquals(9, repo.settings.first().transposition)
-        repo.setTransposition(2)
-        assertEquals(2, repo.settings.first().transposition)
-    }
-
-    @Test
-    fun unknownVersion1ModeFallsBackToConcert() = runBlocking {
-        store.edit { it[stringPreferencesKey("transposition")] = "SOPRANO" }
-        assertEquals(Transposition.CONCERT, repo.settings.first().transposition)
     }
 }

@@ -2,9 +2,9 @@
 
 [![CI](https://github.com/bst/tunetheworld/actions/workflows/ci.yml/badge.svg)](https://github.com/bst/tunetheworld/actions/workflows/ci.yml)
 
-A free tuner for Android. No ads, no tracking, no account. The app has no internet permission, so nothing you play ever leaves your phone.
+A free tuner for musical instruments on Android. Play a note, and it shows which note it is and how far it is from being in tune. No ads, no tracking, no account. The app has no internet permission, so nothing you play ever leaves your phone.
 
-It listens through the microphone, detects the pitch with a self-written YIN detector, and shows the note together with its deviation on a needle gauge. It works with any instrument or voice from about 30 Hz to 4200 Hz, from the low B of a five-string bass to the top of the piccolo. By default it shows the sounding (concert) pitch. For transposing instruments you can set the transposition in semitones, and the tuner then shows the written note.
+It listens through the microphone, detects the pitch with a self-written YIN detector, and shows the note together with its deviation in cents on a needle gauge. It works with any instrument or voice from about 30 Hz to 4200 Hz, from the low B of a five-string bass to the top of the piccolo. By default it shows the sounding (concert) pitch. For transposing instruments you can set the transposition in semitones, and the tuner then shows the written note.
 
 <img src="docs/images/tuner-screenshot.png" alt="The tuner showing B♭4 at 0 % deviation and 466.2 Hz, with the needle centred in the green zone" width="270">
 
@@ -18,11 +18,11 @@ It listens through the microphone, detects the pitch with a self-written YIN det
 - UI in English or German, switchable in the app. Note names follow the language: German uses B and H, English uses B♭ and B.
 - The last note stays on screen, greyed out, for 0.8 s after the tone ends.
 - The screen stays on while tuning, and the microphone is released when the app goes to the background.
-- Reference pitch, transposition, gate and language are saved and survive restarts. A tenor or alto mode chosen in version 1 carries over as +14 or +9.
+- Reference pitch, transposition, gate and language are saved and survive restarts.
 
 ## Status
 
-Version 1 is feature-complete and has been checked on the emulator and on a real device. The level meter and adjustable gate are the most recent addition.
+The current version is feature-complete and has been checked on the emulator and on a real device.
 
 | Area | State |
 | --- | --- |
@@ -33,13 +33,16 @@ Version 1 is feature-complete and has been checked on the emulator and on a real
 | Settings (DataStore) | Done, unit tested |
 | ViewModel and Compose UI (tuner screen, gauge, level meter, settings sheet, permission screen) | Done |
 | Emulator check (host audio routed through a virtual PipeWire microphone) | Done |
-| Testing on a real device | Done, works as expected |
+| Testing on a real device, debug and minified release build | Done, works as expected |
+| Smoke tests on emulators with API 26 and 36, run in CI | Done |
 
-`./gradlew test` runs 48 unit tests in 10 test classes, and all of them pass. Two more classes only export data and are skipped unless asked for: `PlotDataExport` writes the data behind the figures in [PITCH_DETECTION.md](PITCH_DETECTION.md) (see [docs/plots/README.md](docs/plots/README.md)), and `EvaluationExport` writes every reading for the block-by-block evaluation (see the [research log](docs/research/RESEARCH_LOG.md)).
+`./gradlew test` runs 46 unit tests in 10 test classes, and all of them pass. Two more classes only export data and are skipped unless asked for: `PlotDataExport` writes the data behind the figures in [PITCH_DETECTION.md](PITCH_DETECTION.md) (see [docs/plots/README.md](docs/plots/README.md)), and `EvaluationExport` writes every reading for the block-by-block evaluation (see the [research log](docs/research/RESEARCH_LOG.md)).
 
 Known gaps:
 
 - Release builds are signed with the debug key unless a release key is configured (see [Building](#building)).
+- The app is not published yet. The channel (GitHub Releases, F-Droid or Play Store) is still to be decided.
+- `main` is not protected yet, so a failing CI run does not block a merge. GitHub only allows this for public repositories or with GitHub Pro.
 
 Out of scope for now: playing a reference tone, strobe display, pitch history, and landscape layout.
 
@@ -87,12 +90,13 @@ app/src/main/java/io/github/bst/tunetheworld/
   MainActivity.kt      AppCompatActivity, permission switch
   audio/               AudioInput (AudioRecord wrapper)
   engine/              TunerEngine, TunerConfig
-  dsp/                 YinPitchDetector, PitchSmoother, PitchPipeline, SignalUtils (Android-free)
+  dsp/                 YinPitchDetector, DifferenceFunction, PitchPipeline, PitchSmoother, SignalUtils (Android-free)
   music/               NoteMapper, NoteNames, Transposition (Android-free)
   data/                SettingsRepository (DataStore), TunerSettings
-  ui/                  TunerViewModel, TunerScreen, NeedleGauge, LevelMeter, SettingsSheet, PermissionScreen
+  ui/                  TunerViewModel, TunerUiState, TunerScreen, NeedleGauge, LevelMeter, SettingsSheet, PermissionScreen
 app/src/main/res/      strings in values/ (English) and values-de/ (German)
-app/src/test/          unit tests, AiffReader test helper
+app/src/test/          unit tests, AiffReader test helper, data exports for the figures and the evaluation
+app/src/androidTest/   smoke tests on a device or emulator
 ```
 
 ## Building
@@ -106,14 +110,14 @@ Requirements: JDK 17 or newer (the Gradle daemon toolchain is set to 21) and an 
 | Dependencies | AndroidX (Compose Material 3, Activity, AppCompat, Lifecycle, DataStore), Kotlin Coroutines, JUnit 4, AndroidX Test and Compose UI Test |
 
 ```sh
-./gradlew assembleDebug        # build the APK
-./gradlew installDebug         # install on a connected device or emulator
-./gradlew installRelease       # install the optimised, non-debuggable build
-./gradlew test                 # run unit tests (no device needed)
+./gradlew assembleDebug              # build the APK
+./gradlew installDebug               # install on a connected device or emulator
+./gradlew installRelease             # install the optimised, non-debuggable build
+./gradlew test                       # run unit tests (no device needed)
 ./gradlew connectedDebugAndroidTest  # run smoke tests on a connected device or emulator
-./gradlew lintDebug            # run Android lint
-./gradlew ktlintCheck          # check Kotlin code style
-./gradlew ktlintFormat         # fix Kotlin code style where possible
+./gradlew lintDebug                  # run Android lint
+./gradlew ktlintCheck                # check Kotlin code style
+./gradlew ktlintFormat               # fix Kotlin code style where possible
 ```
 
 With several devices connected, pick one with `ANDROID_SERIAL=<serial>` (see `adb devices`).
@@ -129,7 +133,7 @@ tunetheworld.release.keyPassword=...
 
 Android only updates an installed app from an APK signed with the same key. When switching between keys, uninstall the app first.
 
-Release builds are shrunk and obfuscated with R8, and unused resources are removed. This takes the APK from about 9.7 MB to about 1.7 MB. Stack traces from a release build show shortened names. To read them, keep `app/build/outputs/mapping/release/mapping.txt` from the same build and run the trace through `retrace` from the Android SDK command-line tools. Unit tests run on the unshrunk code, so check a release build on a device before publishing it.
+Release builds are shrunk and obfuscated with R8, and unused resources are removed. This takes the APK from about 9.7 MB to about 1.7 MB. Stack traces from a release build show shortened names. To read them, keep `app/build/outputs/mapping/release/mapping.txt` from the same build and run the trace through `retrace` from the Android SDK command-line tools. All tests run on the unshrunk debug build, so check a release build on a device before publishing it.
 
 Git hooks in `.githooks/` run these checks. Enable them once per clone with `git config core.hooksPath .githooks`.
 
@@ -148,7 +152,7 @@ The unit tests run on the JVM and need no device:
 - `YinPitchDetectorTest`: pure sines from 31 Hz to 4186 Hz (all within 1 cent), sax-like and low-string tones with a weak fundamental that must not be detected an octave high, a tone with a dominant third harmonic, the memory of the previous block (repairs a fading fundamental, does not hold back a real note change, forgets on reset), noise, silence, and a runtime budget.
 - `DifferenceFunctionTest`: the FFT difference function matches the plain definition (computed in double precision) on noise and harmonic tones, keeps exact zeros at the period of a perfectly periodic tone, and gives zero for silence.
 - `PitchSmootherTest`, `SignalUtilsTest`, `PitchPipelineTest`: smoothing, octave guard, RMS and dB conversion, and gate behaviour.
-- `SettingsRepositoryTest`: defaults, clamping, migration of the version 1 modes, and fallback for unknown stored values.
+- `SettingsRepositoryTest`: defaults, saving, and clamping of out-of-range values.
 - `SampleValidationTest`: runs 175 recordings from the [University of Iowa Musical Instrument Samples](https://theremin.music.uiowa.edu/MIS.html) through the full pipeline. They cover all 25 instruments of the collection with their lowest, highest and two middle notes at ff, plus the lowest and highest at pp. The instruments range from double bass C1 (32.7 Hz) to glockenspiel and crotales near C8: saxophones, clarinets, flutes, oboe, bassoon, brass, bowed and plucked strings, piano, and mallet percussion. Each recording is checked in concert pitch and in its instrument's usual transposition, against its player's reference pitch (the named note shifted by the median of the settled readings within ±100 cents of it). The test splits every note into three phases:
   - **Attack:** the first 300 ms. Only the onset time is checked, because the sound itself is still settling: overblown flute notes speak in the octave below for a moment, and low brass slides into the pitch.
   - **Settled part:** judged strictly. It must show the right note and octave in at least 95 % of blocks, have no octave errors, and change by at most 3 cents per block in the median. Struck and plucked notes that die away before they settle are only checked for wrong readings, and notes shorter than about 230 ms of full windows are only reported.
@@ -170,13 +174,13 @@ GitHub Actions runs [.github/workflows/ci.yml](.github/workflows/ci.yml) on ever
 
 When a job fails, its lint and test reports are attached to the run as a download. [Dependabot](.github/dependabot.yml) opens a pull request for outdated libraries and actions once a week.
 
-## Testing on the emulator
+## Testing with real audio on the emulator
 
 The emulator can be fed audio from the host through a virtual PipeWire microphone, which leaves the host's default input untouched:
 
-1. Create a virtual microphone with `pw-loopback`: a sink `saxsink` and a source `saxmic`.
-2. Start the emulator with a visible window and `-allow-host-audio`, with `PULSE_SOURCE=saxmic` and `PULSE_SERVER=unix:/run/user/1000/pulse/native` set. A headless emulator (`-no-window`) cannot open an audio driver and only receives silence.
-3. Run `adb emu avd hostmicoff`, then `hostmicon`, then play a file with `pw-cat -p --target saxsink <file>`. The host microphone bridge only passes about 4–5 s of audio after each toggle and then delivers silence, even if playback continues. So toggle before every note and check the screen within about 2 s.
+1. Create a virtual microphone with `pw-loopback`: a sink `tunersink` and a source `tunermic`.
+2. Start the emulator with a visible window and `-allow-host-audio`, with `PULSE_SOURCE=tunermic` and `PULSE_SERVER=unix:/run/user/1000/pulse/native` set. A headless emulator (`-no-window`) cannot open an audio driver and only receives silence.
+3. Run `adb emu avd hostmicoff`, then `hostmicon`, then play a file with `pw-cat -p --target tunersink <file>`. The host microphone bridge only passes about 4–5 s of audio after each toggle and then delivers silence, even if playback continues. So toggle before every note and check the screen within about 2 s.
 
 The emulator uses the `VOICE_RECOGNITION` source (no `UNPROCESSED`), and its latency says nothing about real devices.
 
@@ -184,7 +188,7 @@ The emulator uses the `VOICE_RECOGNITION` source (no `UNPROCESSED`), and its lat
 
 The project follows these rules:
 
-- No GPL or LGPL libraries (in particular no TarsosDSP). Only Apache-2.0 AndroidX, Compose, Coroutines, DataStore and JUnit.
+- No GPL or LGPL libraries (in particular no TarsosDSP). The app only uses Apache-2.0 libraries: AndroidX (including Compose and DataStore) and Kotlin Coroutines. The tests also use JUnit 4, which is under the Eclipse Public License 1.0.
 - No NDK, C++ or Oboe. DSP code is plain Kotlin and unit-testable.
 - Code and comments are in English. All visible text lives in string resources and is kept up to date in both languages.
 
