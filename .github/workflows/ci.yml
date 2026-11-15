@@ -1,0 +1,52 @@
+# Runs the same checks as the git hooks, plus an APK build, on every pull request and push to main.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# A new push to the same pull request cancels the run that is still going.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      # Matches toolchainVersion in gradle/gradle-daemon-jvm.properties.
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+
+      # Caches Gradle dependencies and build data, and validates the Gradle wrapper.
+      # Only runs on main write to this cache; pull requests just read it.
+      - uses: gradle/actions/setup-gradle@v6
+
+      # Instrument recordings for SampleValidationTest (about 170 MB, see README "Tests").
+      # setup-gradle does not cache this custom directory. Without it, every run downloads
+      # the files from the University of Iowa server and fails when that server is down.
+      - name: Cache instrument recordings
+        uses: actions/cache@v6
+        with:
+          path: ~/.gradle/caches/tunetheworld-samples
+          key: samples-${{ hashFiles('app/src/test/resources/samples.tsv') }}
+
+      - name: Check and build
+        run: ./gradlew --continue :app:ktlintCheck :app:lintDebug :app:testDebugUnitTest :app:assembleDebug
+
+      - name: Upload reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: reports
+          path: app/build/reports
+          retention-days: 14

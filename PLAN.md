@@ -25,9 +25,9 @@ Runs the same checks as the git hooks, plus an APK build:
 ./gradlew :app:ktlintCheck :app:lintDebug :app:testDebugUnitTest :app:assembleDebug
 ```
 
-- [ ] Add `.github/workflows/ci.yml` with `actions/checkout`, `actions/setup-java` (Temurin 21, matching `gradle-daemon-jvm.properties`) and `gradle/actions/setup-gradle` (Gradle caching and wrapper validation).
-- [ ] Cache `~/.gradle/caches/tunetheworld-samples` with `actions/cache`, keyed on the hash of `app/src/test/resources/samples.tsv`. Otherwise every run downloads the recordings (about 170 MB) from the University of Iowa server and fails when it is down.
-- [ ] Upload `app/build/reports` as a build artifact when the job fails, so lint and test reports can be read.
+- [x] Add `.github/workflows/ci.yml` with `actions/checkout`, `actions/setup-java` (Temurin 21, matching `gradle-daemon-jvm.properties`) and `gradle/actions/setup-gradle` (Gradle caching and wrapper validation).
+- [x] Cache `~/.gradle/caches/tunetheworld-samples` with `actions/cache`, keyed on the hash of `app/src/test/resources/samples.tsv`. Otherwise every run downloads the recordings (about 170 MB) from the University of Iowa server and fails when it is down.
+- [x] Upload `app/build/reports` as a build artifact when the job fails, so lint and test reports can be read.
 - [ ] If the runner image lacks API 37 and AGP does not download it, add an `sdkmanager "platforms;android-37"` step.
 
 ### Job 2: instrumented smoke tests on an emulator (~6–10 min per API level)
