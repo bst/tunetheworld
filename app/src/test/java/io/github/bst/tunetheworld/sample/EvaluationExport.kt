@@ -12,7 +12,7 @@ import org.junit.Test
 /**
  * Writes the reading of every analysis block of every test recording to a CSV file, for comparing detector variants
  * block by block with docs/research/evaluate.py. Skipped unless EVAL_OUT is set. The experiments in
- * docs/research/RESEARCH_LOG.md used switchable variants (EVAL_VARIANT), which are in commit fec3db7.
+ * docs/research/RESEARCH_LOG.md used switchable variants (EVAL_VARIANT), which are in commit 2b4d5ad.
  */
 class EvaluationExport {
     private fun detector() = YinPitchDetector(

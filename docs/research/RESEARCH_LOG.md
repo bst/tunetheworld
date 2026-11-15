@@ -27,7 +27,7 @@ The main figure of merit is the settled raw counts. The settled part is what a p
 
 ## Baseline
 
-Detector as of commit `000cde5`: YIN with the near-deepest rule, octave check, interpolation on raw d, threshold 0.15. It takes 224 µs per analysis on a desktop JVM.
+Detector as of commit `43ee68c`: YIN with the near-deepest rule, octave check, interpolation on raw d, threshold 0.15. It takes 224 µs per analysis on a desktop JVM.
 
 ```
 168 recordings with at least one gated block (7 are too short or quiet for one full 93 ms window)
@@ -56,7 +56,7 @@ The release phase has 154 octave-up blocks, mostly low strings losing their fund
 
 ## Experiments
 
-The experiments ran in this order. Each one is compared with the baseline that was current at the time: the original baseline up to experiment 5, then the accepted combination `base2`. "Raw" and "shown" give the blocks that got better and worse in the settled part, then in the release, as `+better/−worse`. The code with all experiment switches is in commit `fec3db7` (`YinOptions` in YinPitchDetector.kt, `EVAL_VARIANT` in EvaluationExport), so every run can be repeated there. The next commit removed the switches and kept only the accepted behaviour; its readings are byte-identical to the snapshot's.
+The experiments ran in this order. Each one is compared with the baseline that was current at the time: the original baseline up to experiment 5, then the accepted combination `base2`. "Raw" and "shown" give the blocks that got better and worse in the settled part, then in the release, as `+better/−worse`. The code with all experiment switches is in commit `2b4d5ad` (`YinOptions` in YinPitchDetector.kt, `EVAL_VARIANT` in EvaluationExport), so every run can be repeated there. The next commit removed the switches and kept only the accepted behaviour; its readings are byte-identical to the snapshot's.
 
 ### 1. Lower limit of the octave check (`OCTAVE_MIN_DIP`): rejected alone, accepted at 0.02 together with experiment 5
 
