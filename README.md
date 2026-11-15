@@ -4,6 +4,8 @@ A free tuner for Android. No ads, no tracking, no account. The app has no intern
 
 It listens through the microphone, detects the pitch with a self-written YIN detector, and shows the note together with its deviation on a needle gauge. It works with any instrument or voice from about 30 Hz to 4200 Hz, from the low B of a five-string bass to the top of the piccolo. By default it shows the sounding (concert) pitch. For transposing instruments you can set the transposition in semitones, and the tuner then shows the written note.
 
+<img src="docs/images/tuner-screenshot.png" alt="The tuner showing B♭4 at 0 % deviation and 466.2 Hz, with the needle centred in the green zone" width="270">
+
 ## Features
 
 - Note name with octave, large and readable, plus the measured frequency in Hz.
@@ -36,7 +38,7 @@ Version 1 is feature-complete and has been checked on the emulator and on a real
 Known gaps:
 
 - `applicationId` is `de.example.tunetheworld`, which still uses the placeholder `de.example` prefix.
-- Release builds are not minified and no signing config is set up.
+- Release builds are not minified, and are signed with the debug key unless a release key is configured (see [Building](#building)).
 
 Out of scope for now: playing a reference tone, strobe display, pitch history, and landscape layout.
 
