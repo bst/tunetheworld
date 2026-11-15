@@ -42,7 +42,6 @@ Known gaps:
 
 - Release builds are signed with the debug key unless a release key is configured (see [Building](#building)).
 - The app is not published yet. The channel (GitHub Releases, F-Droid or Play Store) is still to be decided.
-- `main` is not protected yet, so a failing CI run does not block a merge. GitHub only allows this for public repositories or with GitHub Pro.
 
 Out of scope for now: playing a reference tone, strobe display, pitch history, and landscape layout.
 
@@ -172,7 +171,7 @@ GitHub Actions runs [.github/workflows/ci.yml](.github/workflows/ci.yml) on ever
 - **checks:** ktlint, Android lint, the unit tests and a debug build, the same as the git hooks. The test recordings are cached, so runs do not depend on the University of Iowa server.
 - **emulator:** the smoke tests on an emulator with API 26 (`minSdk`) and API 36 (`targetSdk`).
 
-When a job fails, its lint and test reports are attached to the run as a download. [Dependabot](.github/dependabot.yml) opens a pull request for outdated libraries and actions once a week.
+A pull request can only be merged into `main` when all three jobs pass. When a job fails, its lint and test reports are attached to the run as a download. [Dependabot](.github/dependabot.yml) opens a pull request for outdated libraries and actions once a week.
 
 ## Testing with real audio on the emulator
 
