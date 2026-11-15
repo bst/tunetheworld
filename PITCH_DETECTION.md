@@ -1,6 +1,6 @@
 # Pitch detection
 
-This document explains how Tune the World turns microphone samples into a note and a deviation in cents. It says which parts come from published methods, which are this project's own additions, and why each one is there. The short version is in the [README](README.md#how-it-works). The figures are drawn from the app's own code; [docs/plots/README.md](docs/plots/README.md) explains how to regenerate them. All constants live in [TunerConfig.kt](app/src/main/java/de/example/tunetheworld/engine/TunerConfig.kt).
+This document explains how Tune the World turns microphone samples into a note and a deviation in cents. It says which parts come from published methods, which are this project's own additions, and why each one is there. The short version is in the [README](README.md#how-it-works). The figures are drawn from the app's own code; [docs/plots/README.md](docs/plots/README.md) explains how to regenerate them. All constants live in [TunerConfig.kt](app/src/main/java/io/github/bst/tunetheworld/engine/TunerConfig.kt).
 
 The core is the YIN algorithm [1], with the difference function computed by FFT [1, 3, 4], a first-dip rule borrowed from the McLeod Pitch Method [2], an octave check for low notes, an adapted form of the paper's "best local estimate" that remembers the previous block, and median smoothing [5].
 
@@ -20,12 +20,12 @@ flowchart LR
 
 | Stage | Code |
 |---|---|
-| Audio input | [AudioInput.kt](app/src/main/java/de/example/tunetheworld/audio/AudioInput.kt) |
-| Window, gate, confidence filter | [PitchPipeline.kt](app/src/main/java/de/example/tunetheworld/dsp/PitchPipeline.kt) |
-| YIN | [YinPitchDetector.kt](app/src/main/java/de/example/tunetheworld/dsp/YinPitchDetector.kt) |
-| Difference function by FFT | [DifferenceFunction.kt](app/src/main/java/de/example/tunetheworld/dsp/DifferenceFunction.kt) |
-| Smoothing | [PitchSmoother.kt](app/src/main/java/de/example/tunetheworld/dsp/PitchSmoother.kt) |
-| Note and cents | [NoteMapper.kt](app/src/main/java/de/example/tunetheworld/music/NoteMapper.kt) |
+| Audio input | [AudioInput.kt](app/src/main/java/io/github/bst/tunetheworld/audio/AudioInput.kt) |
+| Window, gate, confidence filter | [PitchPipeline.kt](app/src/main/java/io/github/bst/tunetheworld/dsp/PitchPipeline.kt) |
+| YIN | [YinPitchDetector.kt](app/src/main/java/io/github/bst/tunetheworld/dsp/YinPitchDetector.kt) |
+| Difference function by FFT | [DifferenceFunction.kt](app/src/main/java/io/github/bst/tunetheworld/dsp/DifferenceFunction.kt) |
+| Smoothing | [PitchSmoother.kt](app/src/main/java/io/github/bst/tunetheworld/dsp/PitchSmoother.kt) |
+| Note and cents | [NoteMapper.kt](app/src/main/java/io/github/bst/tunetheworld/music/NoteMapper.kt) |
 
 All DSP code is plain Kotlin without Android dependencies, so the same code runs in the app and in the JVM unit tests against real recordings. Arrays are allocated once; the per-block path allocates nothing except the small result object.
 
@@ -66,7 +66,7 @@ Raw d(τ) starts at zero for τ = 0 and dips at every multiple of the period, so
 
 ![The test signal, its difference function d(τ) and the normalized d′(τ)](docs/images/yin-functions.svg)
 
-The figure shows both functions for one test signal from [YinPitchDetectorTest](app/src/test/java/de/example/tunetheworld/dsp/YinPitchDetectorTest.kt) (`saxLikeLowToneIsNotAnOctaveHigh`). It is a low B♭2 at 116.54 Hz whose second partial is louder than the fundamental, as on a real low saxophone note. The values come from the app's own `DifferenceFunction`, run on the full 4096-sample buffer.
+The figure shows both functions for one test signal from [YinPitchDetectorTest](app/src/test/java/io/github/bst/tunetheworld/dsp/YinPitchDetectorTest.kt) (`saxLikeLowToneIsNotAnOctaveHigh`). It is a low B♭2 at 116.54 Hz whose second partial is louder than the fundamental, as on a real low saxophone note. The values come from the app's own `DifferenceFunction`, run on the full 4096-sample buffer.
 
 - **Signal (top):** the period is T = 44100 / 116.54 ≈ 378.4 samples. The first w = 2048 samples (shaded blue) are compared with copies of the signal shifted by τ.
 - **d(τ) (middle):** zero at τ = 0, then nearly zero again at T, 2T and 3T, where the signal lines up with itself. It is not exactly zero there, because the true period falls between two whole samples. Step 4 deals with that. At T/2 only the even partials line up, which gives a partial dip.
@@ -205,9 +205,9 @@ d(τ) = Σ x[j]²  +  Σ x[j+τ]²  −  2 · Σ x[j]·x[j+τ]
 - The second is a sliding sum. With prefix sums E[i] = Σ_{j<i} x[j]², it is E[τ+w] − E[τ], one subtraction per lag.
 - The third is the cross-correlation of the first w samples with the whole buffer. By the correlation theorem, a correlation is a product in the frequency domain: r = IFFT(conj(A) · B), where A and B are the FFTs of the two signals [4, section 13.2]. With an FFT [3] this takes O(n log n) for all lags at once instead of O(w · τ_max).
 
-The paper also mentions an FFT implementation [1, section V], but for its variant with a window that shrinks as τ grows (its Eq. 2). That variant needs a bias correction and makes large lags less reliable, so the paper calls it "not as good". That limitation does not apply here. The first w samples are correlated with the whole buffer, which gives the paper's Eq. (6) exactly for every lag. The result is the same as the direct loop, as [DifferenceFunctionTest](app/src/test/java/de/example/tunetheworld/dsp/DifferenceFunctionTest.kt) checks.
+The paper also mentions an FFT implementation [1, section V], but for its variant with a window that shrinks as τ grows (its Eq. 2). That variant needs a bias correction and makes large lags less reliable, so the paper calls it "not as good". That limitation does not apply here. The first w samples are correlated with the whole buffer, which gives the paper's Eq. (6) exactly for every lag. The result is the same as the direct loop, as [DifferenceFunctionTest](app/src/test/java/io/github/bst/tunetheworld/dsp/DifferenceFunctionTest.kt) checks.
 
-Implementation details in [DifferenceFunction.kt](app/src/main/java/de/example/tunetheworld/dsp/DifferenceFunction.kt):
+Implementation details in [DifferenceFunction.kt](app/src/main/java/io/github/bst/tunetheworld/dsp/DifferenceFunction.kt):
 
 - **FFT size 4096.** Both signals are zero-padded to n ≥ w + τ_max, so the circular correlation computed by the FFT does not wrap around into the lags that are needed.
 - **Two real FFTs for the price of one.** The first w samples go into the real part and the whole buffer into the imaginary part of one complex FFT. The two spectra are separated afterwards using their symmetry [4, section 12.3]:
@@ -219,7 +219,7 @@ Implementation details in [DifferenceFunction.kt](app/src/main/java/de/example/t
 - **Double precision.** Near a dip, d(τ) is a small difference of large terms, so float rounding would eat the information that matters. Values that come out slightly negative from rounding (silence, a perfectly periodic tone) are clamped to 0.
 - **Radix-2, iterative, in place**, with precomputed twiddle factors and bit-reversal table. Nothing is allocated per call.
 
-On a desktop JVM this takes about 240 µs per analysis instead of about 2.8 ms for the direct loop, roughly 12× faster. Across the 42 test recordings of the time (5940 analysis blocks), the FFT version gives the same readings as the direct loop to within 0.002 cents, and no block changes between "note" and "no note". [DifferenceFunctionTest](app/src/test/java/de/example/tunetheworld/dsp/DifferenceFunctionTest.kt) compares it with the textbook definition, computed in double precision, on noise and harmonic tones from 32.7 Hz to 2637 Hz.
+On a desktop JVM this takes about 240 µs per analysis instead of about 2.8 ms for the direct loop, roughly 12× faster. Across the 42 test recordings of the time (5940 analysis blocks), the FFT version gives the same readings as the direct loop to within 0.002 cents, and no block changes between "note" and "no note". [DifferenceFunctionTest](app/src/test/java/io/github/bst/tunetheworld/dsp/DifferenceFunctionTest.kt) compares it with the textbook definition, computed in double precision, on noise and harmonic tones from 32.7 Hz to 2637 Hz.
 
 ## 5. Precision and latency
 
@@ -232,7 +232,7 @@ Measured by the unit tests on synthetic tones:
 | harmonic tones with a weak fundamental (65.41 Hz, 116.54 Hz) or a dominant third harmonic (466.16 Hz) | 2 cents, right octave |
 | 65.41 Hz whose fundamental fades after a clean block (memory of step 3c) | 2 cents, right octave |
 
-The finer sweep in the [step 4 figure](#step-4-parabolic-interpolation) shows the error staying below 0.1 cents up to about 2 kHz and below 0.9 cents up to 4.2 kHz. High notes are the hardest case, because their short periods (10 samples at 4186 Hz) leave the three points covering more of the dip. On real recordings, the median block-to-block jitter of steady notes must stay at or below 3 cents; see [SampleValidationTest](app/src/test/java/de/example/tunetheworld/sample/SampleValidationTest.kt).
+The finer sweep in the [step 4 figure](#step-4-parabolic-interpolation) shows the error staying below 0.1 cents up to about 2 kHz and below 0.9 cents up to 4.2 kHz. High notes are the hardest case, because their short periods (10 samples at 4186 Hz) leave the three points covering more of the dip. On real recordings, the median block-to-block jitter of steady notes must stay at or below 3 cents; see [SampleValidationTest](app/src/test/java/io/github/bst/tunetheworld/sample/SampleValidationTest.kt).
 
 Latency: a reading reflects the last 93 ms of sound and is updated every 23 ms. The median of 5 adds about two hops (about 46 ms) of delay. In the recordings a note is shown within 300 ms of its first loud block, usually much sooner.
 
@@ -256,8 +256,8 @@ This is twelve-tone equal temperament, the same mapping MIDI uses. The transposi
 ## 8. Testing
 
 - **Unit tests** check each stage on synthetic signals: sines across the range, harmonic tones with a weak fundamental or a dominant third harmonic, the memory of step 3c, noise, silence, and the FFT against the direct definition.
-- **Real recordings:** [SampleValidationTest](app/src/test/java/de/example/tunetheworld/sample/SampleValidationTest.kt) runs the complete pipeline on 175 recordings from the University of Iowa Musical Instrument Samples [6]. They cover every instrument of the collection, 25 in all, from double bass and tuba to glockenspiel, crotales and piano, with their lowest, highest and two middle notes. They include vibrato, quiet notes, and plucked and struck notes. Each note is split into attack, settled part and release. Each recording is judged against its player's reference pitch, because some players are 50–80 cents out of tune. At least 70 % of the blocks above the gate must give a reading (40 % for plucked and struck notes), the first within 300 ms. The settled part is judged strictly: the right note in at least 95 % of its readings, and a median jitter of at most 3 cents. The 8 recordings marked `known-failure` are run and reported but do not fail the test. The recordings are downloaded on demand and checked against SHA-256 hashes listed in [samples.tsv](app/src/test/resources/samples.tsv); the README explains the license.
-- **Block-by-block evaluation:** [EvaluationExport](app/src/test/java/de/example/tunetheworld/sample/EvaluationExport.kt) and [evaluate.py](docs/research/evaluate.py) classify every analysis block of every recording and compare two detector versions block by block. The [research log](docs/research/RESEARCH_LOG.md) uses them to test the ideas from the YIN paper and records what was accepted or rejected.
+- **Real recordings:** [SampleValidationTest](app/src/test/java/io/github/bst/tunetheworld/sample/SampleValidationTest.kt) runs the complete pipeline on 175 recordings from the University of Iowa Musical Instrument Samples [6]. They cover every instrument of the collection, 25 in all, from double bass and tuba to glockenspiel, crotales and piano, with their lowest, highest and two middle notes. They include vibrato, quiet notes, and plucked and struck notes. Each note is split into attack, settled part and release. Each recording is judged against its player's reference pitch, because some players are 50–80 cents out of tune. At least 70 % of the blocks above the gate must give a reading (40 % for plucked and struck notes), the first within 300 ms. The settled part is judged strictly: the right note in at least 95 % of its readings, and a median jitter of at most 3 cents. The 8 recordings marked `known-failure` are run and reported but do not fail the test. The recordings are downloaded on demand and checked against SHA-256 hashes listed in [samples.tsv](app/src/test/resources/samples.tsv); the README explains the license.
+- **Block-by-block evaluation:** [EvaluationExport](app/src/test/java/io/github/bst/tunetheworld/sample/EvaluationExport.kt) and [evaluate.py](docs/research/evaluate.py) classify every analysis block of every recording and compare two detector versions block by block. The [research log](docs/research/RESEARCH_LOG.md) uses them to test the ideas from the YIN paper and records what was accepted or rejected.
 
 ## References
 

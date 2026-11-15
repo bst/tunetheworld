@@ -2,7 +2,7 @@
 
 The figures in [docs/images](../images) are drawn from the app's own detector code, not from a separate re-implementation. Two steps produce them.
 
-1. **Export the data.** [PlotDataExport](../../app/src/test/java/de/example/tunetheworld/docs/PlotDataExport.kt) is a JUnit test. It is skipped unless `PLOT_DATA_DIR` is set. It runs the test signals and recordings through [YinTrace](../../app/src/test/java/de/example/tunetheworld/docs/YinTrace.kt) and writes CSV files. `YinTrace` repeats the steps of `YinPitchDetector` and keeps every intermediate value. It checks that its result still matches the real detector exactly, and the export fails if it does not. The export also fails if the chosen example blocks no longer show the effect their figure is about.
+1. **Export the data.** [PlotDataExport](../../app/src/test/java/io/github/bst/tunetheworld/docs/PlotDataExport.kt) is a JUnit test. It is skipped unless `PLOT_DATA_DIR` is set. It runs the test signals and recordings through [YinTrace](../../app/src/test/java/io/github/bst/tunetheworld/docs/YinTrace.kt) and writes CSV files. `YinTrace` repeats the steps of `YinPitchDetector` and keeps every intermediate value. It checks that its result still matches the real detector exactly, and the export fails if it does not. The export also fails if the chosen example blocks no longer show the effect their figure is about.
 
    ```sh
    PLOT_DATA_DIR=$PWD/build/plot-data ./gradlew :app:testDebugUnitTest --tests '*PlotDataExport' --rerun

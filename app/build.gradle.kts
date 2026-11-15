@@ -39,13 +39,13 @@ abstract class DownloadSamples : DefaultTask() {
 }
 
 android {
-    namespace = "de.example.tunetheworld"
+    namespace = "io.github.bst.tunetheworld"
     compileSdk {
         version = release(37)
     }
 
     defaultConfig {
-        applicationId = "de.example.tunetheworld"
+        applicationId = "io.github.bst.tunetheworld"
         minSdk = 26
         targetSdk = 36
         versionCode = 1

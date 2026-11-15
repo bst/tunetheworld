@@ -37,7 +37,6 @@ Version 1 is feature-complete and has been checked on the emulator and on a real
 
 Known gaps:
 
-- `applicationId` is `de.example.tunetheworld`, which still uses the placeholder `de.example` prefix.
 - Release builds are not minified, and are signed with the debug key unless a release key is configured (see [Building](#building)).
 
 Out of scope for now: playing a reference tone, strobe display, pitch history, and landscape layout.
@@ -66,23 +65,23 @@ flowchart LR
 ```
 
 - **Audio source:** `UNPROCESSED` if the device supports it, otherwise `VOICE_RECOGNITION`. It never uses `MIC`, because that often turns on noise suppression and automatic gain control.
-- **Pitch detection:** YIN in plain Kotlin with no Android dependencies ([YinPitchDetector.kt](app/src/main/java/de/example/tunetheworld/dsp/YinPitchDetector.kt)). It searches 30–4200 Hz. Three additions to plain YIN keep it on the right octave:
+- **Pitch detection:** YIN in plain Kotlin with no Android dependencies ([YinPitchDetector.kt](app/src/main/java/io/github/bst/tunetheworld/dsp/YinPitchDetector.kt)). It searches 30–4200 Hz. Three additions to plain YIN keep it on the right octave:
   - A dip is only accepted if it is within 0.1 of the deepest dip. Otherwise a shallow dip at half the period can win on high notes (clarinet B♭6).
   - An octave check looks at twice the lag (for lags of 100 samples or more, below about 440 Hz) and three times the lag (for lags of 20 or more). If the dip in the raw difference there is less than a fifth as deep, that multiple is taken as the period. This catches notes whose second or third harmonic is much louder than the fundamental: low strings, the saxophone's low register, the oboe's B♭4.
   - The detector remembers the previous block. If its dip was cleaner and the raw difference is much smaller near its period, the current block takes that period. This is the YIN paper's step 6, adapted; it repairs octave errors of low strings as their fundamental fades.
 
   The [research log](docs/research/RESEARCH_LOG.md) records how these rules and their constants were chosen.
 
-  The difference function is computed with an FFT ([DifferenceFunction.kt](app/src/main/java/de/example/tunetheworld/dsp/DifferenceFunction.kt)): expanding the square leaves two energy terms (running sums) and a cross-correlation, which one forward and one inverse FFT of size 4096 give for every lag at once. Everything is in double precision, because near a dip the result is a small difference of large terms. This is about 12× faster than the plain loop it replaced (about 240 µs instead of 2.8 ms per analysis on a desktop JVM). Across the 42 test recordings of the time it gave the same readings within 0.002 cents. `detect()` allocates nothing. The level gate checks both ends of the analysis window, so a note's first blocks are not analysed while the window still holds the silence before it.
-- **Smoothing:** a median over 5 values. A jump of more than 0.8 semitones is ignored, unless three consecutive values agree on it, in which case it counts as a real note change ([PitchSmoother.kt](app/src/main/java/de/example/tunetheworld/dsp/PitchSmoother.kt)).
-- **Note math:** `m = 69 + 12·log2(f / ref)`. The nearest sounding note is `n = round(m)` and the deviation is `(m − n) · 100` %. The transposition is added after rounding, and the reference pitch always means concert A4 ([NoteMapper.kt](app/src/main/java/de/example/tunetheworld/music/NoteMapper.kt)). All calculation uses the pitch class index (0–11). The name comes from [NoteNames.kt](app/src/main/java/de/example/tunetheworld/music/NoteNames.kt) only at display time, because "B" means different notes in German and English.
+  The difference function is computed with an FFT ([DifferenceFunction.kt](app/src/main/java/io/github/bst/tunetheworld/dsp/DifferenceFunction.kt)): expanding the square leaves two energy terms (running sums) and a cross-correlation, which one forward and one inverse FFT of size 4096 give for every lag at once. Everything is in double precision, because near a dip the result is a small difference of large terms. This is about 12× faster than the plain loop it replaced (about 240 µs instead of 2.8 ms per analysis on a desktop JVM). Across the 42 test recordings of the time it gave the same readings within 0.002 cents. `detect()` allocates nothing. The level gate checks both ends of the analysis window, so a note's first blocks are not analysed while the window still holds the silence before it.
+- **Smoothing:** a median over 5 values. A jump of more than 0.8 semitones is ignored, unless three consecutive values agree on it, in which case it counts as a real note change ([PitchSmoother.kt](app/src/main/java/io/github/bst/tunetheworld/dsp/PitchSmoother.kt)).
+- **Note math:** `m = 69 + 12·log2(f / ref)`. The nearest sounding note is `n = round(m)` and the deviation is `(m − n) · 100` %. The transposition is added after rounding, and the reference pitch always means concert A4 ([NoteMapper.kt](app/src/main/java/io/github/bst/tunetheworld/music/NoteMapper.kt)). All calculation uses the pitch class index (0–11). The name comes from [NoteNames.kt](app/src/main/java/io/github/bst/tunetheworld/music/NoteNames.kt) only at display time, because "B" means different notes in German and English.
 - **More detail:** [PITCH_DETECTION.md](PITCH_DETECTION.md) describes every step, why it is there, and the papers it builds on.
-- **Tuning constants** are all in [TunerConfig.kt](app/src/main/java/de/example/tunetheworld/engine/TunerConfig.kt).
+- **Tuning constants** are all in [TunerConfig.kt](app/src/main/java/io/github/bst/tunetheworld/engine/TunerConfig.kt).
 
 ### Project layout
 
 ```
-app/src/main/java/de/example/tunetheworld/
+app/src/main/java/io/github/bst/tunetheworld/
   MainActivity.kt      AppCompatActivity, permission switch
   audio/               AudioInput (AudioRecord wrapper)
   engine/              TunerEngine, TunerConfig

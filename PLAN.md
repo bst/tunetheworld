@@ -9,7 +9,6 @@ In rough order:
 1. **Check the wider range on a real device.** The detector now searches 30–4200 Hz. With the FFT difference function one analysis takes about 240 µs on a desktop JVM, less than the old 90–1100 Hz loop. Confirm on the phone that CPU load and battery use are low.
 2. **Prepare for open source.**
    - Choose a license and add a `LICENSE` file. It must be compatible with the "no GPL/LGPL libraries" rule; Apache-2.0 matches the dependencies.
-   - Replace the placeholder `de.example` prefix in `applicationId` and the package name before the first public release. Changing it later breaks updates for installed apps.
    - Add a short `CONTRIBUTING.md`: how to build, enable the git hooks, run the tests, and the project constraints from the README.
 3. **Milestone: CI for pull requests.** See [below](#milestone-ci-for-pull-requests).
 4. **Release builds.** Turn on minification, set up a signing config with the key kept outside the repository, and decide on a distribution channel (GitHub Releases, F-Droid, Play Store).
