@@ -32,19 +32,19 @@ Runs the same checks as the git hooks, plus an APK build:
 
 ### Job 2: instrumented smoke tests on an emulator (~6–10 min per API level)
 
-All current tests run on the JVM, so nothing yet checks that the app starts on a phone. The emulator's microphone is silent or synthetic, so these tests cover startup, the permission flow and UI, not pitch accuracy. Pitch accuracy is already covered by `SampleValidationTest`.
+The unit tests run on the JVM, so they cannot check that the app starts on a phone. The emulator's microphone is silent or synthetic, so these tests cover startup, the permission flow and UI, not pitch accuracy. Pitch accuracy is already covered by `SampleValidationTest`.
 
-- [ ] Add `app/src/androidTest` and the dependencies (`androidx.test` runner and rules, `compose-ui-test-junit4`, `ui-test-manifest` for debug), plus `testInstrumentationRunner` in `defaultConfig`.
-- [ ] Smoke test: launch `MainActivity` with `RECORD_AUDIO` granted (`GrantPermissionRule`) and check that the tuner screen appears and the engine starts without crashing.
-- [ ] Smoke test: open the settings sheet, change the display mode and the reference pitch, and check that the screen reflects the change.
-- [ ] Smoke test: launch without the permission and check that the permission screen is shown.
-- [ ] Run `connectedDebugAndroidTest` with `reactivecircus/android-emulator-runner` in a matrix over API 26 (`minSdk`) and API 35 or 36 (near `targetSdk`). Use the `aosp_atd` target and cache the AVD snapshot to keep runs fast and stable.
+- [x] Add `app/src/androidTest` and the dependencies (`androidx.test` runner and rules, `compose-ui-test-junit4`, `ui-test-manifest` for debug), plus `testInstrumentationRunner` in `defaultConfig`. The Android Test Orchestrator clears the app data and permissions before each test.
+- [x] Smoke test: launch `MainActivity` with `RECORD_AUDIO` granted (`GrantPermissionRule`) and check that the tuner screen appears and the engine starts without crashing.
+- [x] Smoke test: open the settings sheet, change the reference pitch, and check that the screen reflects the change.
+- [x] Smoke test: launch without the permission and check that the permission screen is shown.
+- [x] Run `connectedDebugAndroidTest` with `reactivecircus/android-emulator-runner` in a matrix over API 26 (`minSdk`, `default` image, as there is no ATD image this old) and API 36 (`targetSdk`, `aosp_atd` image). Cache the AVD snapshot to keep runs fast and stable.
 
 ### Repository settings
 
 - [ ] Protect `main`: require both jobs to pass before merging.
-- [ ] Enable Dependabot for Gradle dependencies and GitHub Actions versions.
-- [ ] Add a CI badge and a short "Continuous integration" section to the README.
+- [x] Enable Dependabot for Gradle dependencies and GitHub Actions versions.
+- [x] Add a CI badge and a short "Continuous integration" section to the README.
 
 ### Optional later
 

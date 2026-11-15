@@ -1,5 +1,7 @@
 # Tune the World
 
+[![CI](https://github.com/bst/tunetheworld/actions/workflows/ci.yml/badge.svg)](https://github.com/bst/tunetheworld/actions/workflows/ci.yml)
+
 A free tuner for Android. No ads, no tracking, no account. The app has no internet permission, so nothing you play ever leaves your phone.
 
 It listens through the microphone, detects the pitch with a self-written YIN detector, and shows the note together with its deviation on a needle gauge. It works with any instrument or voice from about 30 Hz to 4200 Hz, from the low B of a five-string bass to the top of the piccolo. By default it shows the sounding (concert) pitch. For transposing instruments you can set the transposition in semitones, and the tuner then shows the written note.
@@ -99,15 +101,16 @@ Requirements: JDK 17 or newer (the Gradle daemon toolchain is set to 21) and an 
 
 | | |
 | --- | --- |
-| Build tooling | Gradle 9.4.1, AGP 9.2.1, Kotlin 2.2.10 |
+| Build tooling | Gradle 9.9.1, AGP 9.5.1, Kotlin 2.2.10 |
 | SDK | `minSdk 26`, `targetSdk 36`, `compileSdk 37` |
-| Dependencies | AndroidX (Compose Material 3, Activity, AppCompat, Lifecycle, DataStore), Kotlin Coroutines, JUnit 4 |
+| Dependencies | AndroidX (Compose Material 3, Activity, AppCompat, Lifecycle, DataStore), Kotlin Coroutines, JUnit 4, AndroidX Test and Compose UI Test |
 
 ```sh
 ./gradlew assembleDebug        # build the APK
 ./gradlew installDebug         # install on a connected device or emulator
 ./gradlew installRelease       # install the optimised, non-debuggable build
 ./gradlew test                 # run unit tests (no device needed)
+./gradlew connectedDebugAndroidTest  # run smoke tests on a connected device or emulator
 ./gradlew lintDebug            # run Android lint
 ./gradlew ktlintCheck          # check Kotlin code style
 ./gradlew ktlintFormat         # fix Kotlin code style where possible
@@ -155,6 +158,17 @@ The unit tests run on the JVM and need no device:
 - `EvaluationExport` (skipped unless `EVAL_OUT` is set) writes the reading of every analysis block of every recording, for comparing detector versions block by block with [docs/research/evaluate.py](docs/research/evaluate.py).
 
 The recordings are not part of the repository. Their site says they "may be downloaded and used for any projects, without restrictions". They are listed with their SHA-256 hashes in [app/src/test/resources/samples.tsv](app/src/test/resources/samples.tsv), which both the test and the `downloadSamples` task in [app/build.gradle.kts](app/build.gradle.kts) read. To add a recording, add a line there. Before the tests run, the task downloads any missing files (about 170 MB in total), checks their hashes, and stores them in `~/.gradle/caches/tunetheworld-samples/iowa-mis/`. Once they are cached, no network access is needed. The directory is passed to the tests through the `samples.dir` system property. If the download fails, the build fails rather than skipping the test.
+
+The smoke tests in `app/src/androidTest` run on a device or emulator. They check that the app starts, that the permission screen appears without the microphone permission, and that changing the reference pitch in the settings updates the screen. They do not check pitch detection, because an emulator's microphone is silent. Before each test, the Android Test Orchestrator clears the app's data and permissions, so every test starts like a fresh install. This also deletes your settings, so run them on an emulator rather than the phone you use for tuning. With several devices connected, pick one with `ANDROID_SERIAL`.
+
+## Continuous integration
+
+GitHub Actions runs [.github/workflows/ci.yml](.github/workflows/ci.yml) on every pull request and every push to `main`:
+
+- **checks:** ktlint, Android lint, the unit tests and a debug build, the same as the git hooks. The test recordings are cached, so runs do not depend on the University of Iowa server.
+- **emulator:** the smoke tests on an emulator with API 26 (`minSdk`) and API 36 (`targetSdk`).
+
+When a job fails, its lint and test reports are attached to the run as a download. [Dependabot](.github/dependabot.yml) opens a pull request for outdated libraries and actions once a week.
 
 ## Testing on the emulator
 
