@@ -6,10 +6,8 @@ What comes next for Tune the World. Version 1 is feature-complete (see [README.m
 
 In rough order:
 
-1. **Prepare for open source.**
-   - Add a short `CONTRIBUTING.md`: how to build, enable the git hooks, run the tests, and the project constraints from the README.
-2. **Milestone: CI for pull requests.** See [below](#milestone-ci-for-pull-requests).
-3. **Release builds.** Decide on a distribution channel (GitHub Releases, F-Droid, Play Store). Before the first release, test the minified build on a real device: tuner, settings, and the microphone permission flow.
+1. **Milestone: CI for pull requests.** See [below](#milestone-ci-for-pull-requests).
+2. **Release builds.** Decide on a distribution channel (GitHub Releases, F-Droid, Play Store). Before the first release, test the minified build on a real device: tuner, settings, and the microphone permission flow.
 
 Still out of scope for now: reference tone, strobe display, pitch history, landscape layout.
 

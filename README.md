@@ -174,6 +174,10 @@ The project follows these rules:
 - No NDK, C++ or Oboe. DSP code is plain Kotlin and unit-testable.
 - Code and comments are in English. All visible text lives in string resources and is kept up to date in both languages.
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## License
 
 Copyright 2026 Sebastian A. Scherer
