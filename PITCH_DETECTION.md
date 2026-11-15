@@ -11,7 +11,8 @@ flowchart LR
     A["microphone<br/>44.1 kHz mono"] --> B["sliding window<br/>4096 samples, hop 1024"]
     B --> C{"level gate<br/>both ends of window"}
     C -- too quiet --> X["no reading"]
-    C -- loud enough --> D["YIN<br/>30–4200 Hz<br/>+ memory of last block"]    D --> E{"confidence ≥ 0.80"}
+    C -- loud enough --> D["YIN<br/>30–4200 Hz<br/>+ memory of last block"]
+    D --> E{"confidence ≥ 0.80"}
     E -- no --> X
     E -- yes --> F["median of 5<br/>+ jump guard"]
     F --> G["note + cents<br/>reference, transposition"]
