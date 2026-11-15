@@ -52,9 +52,24 @@ android {
         versionName = "1.0"
     }
 
+    // Release signing key from Gradle properties, e.g. in ~/.gradle/gradle.properties (never in the repo).
+    // Without them, release builds are signed with the debug key so they can still be installed locally.
+    val releaseStoreFile = providers.gradleProperty("tunetheworld.release.storeFile").orNull
+    signingConfigs {
+        if (releaseStoreFile != null) {
+            create("release") {
+                storeFile = file(releaseStoreFile)
+                storePassword = providers.gradleProperty("tunetheworld.release.storePassword").get()
+                keyAlias = providers.gradleProperty("tunetheworld.release.keyAlias").get()
+                keyPassword = providers.gradleProperty("tunetheworld.release.keyPassword").get()
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
     }
     compileOptions {

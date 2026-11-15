@@ -105,11 +105,25 @@ Requirements: JDK 17 or newer (the Gradle daemon toolchain is set to 21) and an 
 ```sh
 ./gradlew assembleDebug        # build the APK
 ./gradlew installDebug         # install on a connected device or emulator
+./gradlew installRelease       # install the optimised, non-debuggable build
 ./gradlew test                 # run unit tests (no device needed)
 ./gradlew lintDebug            # run Android lint
 ./gradlew ktlintCheck          # check Kotlin code style
 ./gradlew ktlintFormat         # fix Kotlin code style where possible
 ```
+
+With several devices connected, pick one with `ANDROID_SERIAL=<serial>` (see `adb devices`).
+
+Release builds are signed with the debug key unless a release key is configured. To use your own, put these in `~/.gradle/gradle.properties`, outside the repository:
+
+```properties
+tunetheworld.release.storeFile=/path/to/release.jks
+tunetheworld.release.storePassword=...
+tunetheworld.release.keyAlias=...
+tunetheworld.release.keyPassword=...
+```
+
+Android only updates an installed app from an APK signed with the same key. When switching between keys, uninstall the app first.
 
 Git hooks in `.githooks/` run these checks. Enable them once per clone with `git config core.hooksPath .githooks`.
 
